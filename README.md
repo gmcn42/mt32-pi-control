@@ -8,7 +8,7 @@
 * Can send screen text in MT-32 mode and 16x16 1bpp bitmaps in SoundFont mode to the mt32-pi's display
 * Custom MIDI messages from the command line
 * compiled for 8086 Real Mode, so should work on pretty much any system with an MPU401-compatible interface
-* Useful for making game-specific `.BAT` files to correctly set-up the synth before the game starts
+* Useful for making game-specific `.BAT` files to correctly set up the synth before the game starts
 
 ## Usage Summary
 `MT32-PI.EXE` accepts the following UNIX-style parameters:
@@ -30,7 +30,7 @@ OPTIONS:
   -t/--mt32-txt "Some text": Send an MT-32 text display SysEx.
   -T/--sc55-txt "Some text": Send an SC-55 text display SysEx.
   -P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)
-  -N/--negative: Reverse image color. Use with \'-P/--sc55-bmp\'.
+  -N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
   -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
 ```
 
@@ -39,3 +39,8 @@ The `MAKEFILE` is written for the DOS-version of [Open Watcom C 1.9](https://sou
 Make sure you have the environment variables correctly set up. For that, DosBox users will need to run the `AUTOEXEC.BAT` code supplied by the installer.
 
 Then run `wmake` in the source folder and compilation should run. Optionally, if you also have [upx](https://upx.github.io/) installed in your DOS environment, you can run `UPXCOMP.BAT` afterwards to pack the EXE and save a couple KB of executable size.
+
+## Showcase :)
+<img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_1.jpg" width="480">
+
+<img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_2.jpg" width="480">
