@@ -1,0 +1,27 @@
+#
+# MT32-PI.EXE Makefile for OpenWatcom
+# Copyright (C) 2020 Andreas Zdziarstek
+#
+# adapted from the DOSMid Makefile for OpenWatcom
+# Copyright (C) 2014-2018 Mateusz Viste
+# 
+
+# memory segmentation mode (s = small ; c = compact ; m = medium ; l = large)
+#             code | data
+#  small      64K  | 64K
+#  compact    64K  | 64K+
+#  medium     64K+ | 64K
+#  large      64K+ | 64K+
+MODE = s
+
+all: mt32-pi.exe
+
+mt32-pi.exe: mt32-pi.c mpu401.c
+        wcl -zp2 -lr -we -d0 -y -0 -s -m$(MODE) -wx -fe=mt32-pi.exe -fm=mt32-pi.map *.c
+        
+
+clean: .symbolic
+        del *.obj
+        del *.map
+        del mt32-pi.exe
+
