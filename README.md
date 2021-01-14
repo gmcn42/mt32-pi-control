@@ -44,3 +44,5 @@ Then run `wmake` in the source folder and compilation should run. Optionally, if
 <img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_1.jpg" width="480">
 
 <img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_2.jpg" width="480">
+
+The BMP file is in the archive. I made it with GIMP but MS Paint and others should work just fine as long as the file is 16x16px monochrome (1-bit indexed).
