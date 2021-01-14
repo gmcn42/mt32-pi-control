@@ -1,6 +1,6 @@
 # An mt32-pi control program for DOS
 
-`MT32-PI.EXE` is a DOS control program for the mt32-pi MIDI synthesizer.
+`MT32-PI.EXE` is a DOS control program for the [mt32-pi MIDI synthesizer](https://github.com/dwhinham/mt32-pi).
 
 ## Features
 * Supports sending mt32-pi's custom System Exclusive messages for temporary configuration of SoundFonts & Co.
