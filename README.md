@@ -34,6 +34,8 @@ OPTIONS:
   -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
 ```
 
+You may specify multiple options, i.e. `MT32-PI.EXE -m -t "Hello, World!"` will first send the MT-32 mode command and then the screen text.
+
 ## Building
 The `MAKEFILE` is written for the DOS-version of [Open Watcom C 1.9](https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/) as it can generate Real Mode executables. The Sourceforge release works perfectly in DosBox.
 Make sure you have the environment variables correctly set up. For that, DosBox users will need to run the `AUTOEXEC.BAT` code supplied by the installer.
