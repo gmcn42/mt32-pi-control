@@ -16,22 +16,22 @@
 ```
 USAGE: MT32-PI.EXE [OPTIONS]
 OPTIONS:
-  -h/--help: Print this info.
-  -v/--verbose: Be verbose about what is going on.
-  -r/--reboot: Reboot the Pi. Will block for a few secs to give it time.
-  -p/--port [ADDR]: Set the port address of the MPU401 interface. Default: 330.
-  -m/--mt32: Switch mt32-pi to MT-32 mode.
-  -g/--fluidsynth: Switch mt32-pi to FluidSynth mode.
-  -b/--romset [old, new, cm32l]: Switch MT-32 romset.
-  -s/--soundfont [NUMBER]: Set FluidSynth SoundFont.
-  --mt32-reset: Send an MT-32 reset SysEx message.
-  --gm-reset: Send a GM reset SysEx message.
-  --gs-reset: Send a GS reset SysEx message.
-  -t/--mt32-txt "Some text": Send an MT-32 text display SysEx.
-  -T/--sc55-txt "Some text": Send an SC-55 text display SysEx.
-  -P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)
-  -N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
-  -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
+-h/--help: Print this info.
+-v/--verbose: Be verbose about what is going on.
+-r/--reboot: Reboot the Pi. Will block for a few secs to give it time.
+-p [ADDR]: Set the port address of the MPU401 interface. Default: 330.
+-m/--mt32: Switch mt32-pi to MT-32 mode.
+-g/--fluidsynth: Switch mt32-pi to FluidSynth mode.
+-b/--romset [old, new, cm32l]: Switch MT-32 romset.
+-s/--soundfont [NUMBER]: Set FluidSynth SoundFont.
+--mt32-reset: Send an MT-32 reset SysEx message.
+--gm-reset: Send a GM reset SysEx message.
+--gs-reset: Send a GS reset SysEx message.
+-t/--mt32-txt "Some text": Send an MT-32 text display SysEx.
+-T/--sc55-txt "Some text": Send an SC-55 text display SysEx.
+-P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)
+-N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
+-M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
 ```
 
 You may specify multiple options, i.e. `MT32-PI.EXE -m -t "Hello, World!"` will first send the MT-32 mode command and then the screen text.
