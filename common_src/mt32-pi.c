@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 	
 	// The MIDI backend may add some more short options
 	// Be sure that strlen(optstr) remains <32
-	// Could also generate new string of arboitrary
+	// Could also generate new string of arbitrary
 	// but don't really wanna mess with malloc/free
 	// for this bit
 	mididev_add_optstr(optstr);
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
 					while(1) {
 						errno = 0;
 						*mptr = (unsigned char)strtoul(optarg, &end, 16);
-						if(errno || end==mptr)
+						if(errno || end==optarg)
 							break;
 						custom_midi_len++;
 						mptr++;

@@ -79,11 +79,6 @@ char    *optarg;		/* argument associated with option */
 #define	BADARG		((*options == ':') ? (int)':' : (int)'?')
 #define	INORDER 	(int)1
 
-#ifndef __CYGWIN__
-#define __progname __argv[0]
-#else
-extern char __declspec(dllimport) *__progname;
-#endif
 
 #ifdef __CYGWIN__
 static char EMSG[] = "";
@@ -115,7 +110,7 @@ static const char illoptstring[] = "unknown option -- %s";
 static void
 _vwarnx(const char *fmt,va_list ap)
 {
-  (void)fprintf(stderr,"%s: ",__progname);
+  (void)fprintf(stderr,"Error: ");
   if (fmt != NULL)
     (void)vfprintf(stderr,fmt,ap);
   (void)fprintf(stderr,"\n");
