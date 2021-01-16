@@ -2,7 +2,9 @@
 
 MT32-PI.EXE is a DOS control program for the mt32-pi MIDI synthesizer.
 
-Source available at https://github.com/gmcn42/mt32-pi-control
+Program source available at https://github.com/gmcn42/mt32-pi-control
+
+The mt32-pi synthesizer lives at https://github.com/dwhinham/mt32-pi
 
 
 #### Usage Summary ####
