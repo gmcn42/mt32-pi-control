@@ -32,7 +32,7 @@
 #include <time.h>
 #include <errno.h>
 
-#include "mpu401.h"
+#include "midi_dev.h"
 #include "getopt.h"
 
 typedef enum {
@@ -76,8 +76,7 @@ static char sc55_text[33] = {'\0'};
 int main(int argc, char *argv[]) {
 	// static linkage because of C89 and struct
 	// initialization for long_options[]
-	static int mpubase = 0x330,
-		reboot_flag = 0,
+	static int reboot_flag = 0,
 		mt32_rst_flag = 0,
 		gs_rst_flag = 0,
 		gm_rst_flag = 0,
@@ -88,14 +87,7 @@ int main(int argc, char *argv[]) {
 	static mt32pi_romset_t romset = ROM_UNCHANGED;
 
 	int c;
-
-	opterr = 0;
-	if(argc == 1) {
-		print_usage();
-		return -1;
-	}
-	while(1) {
-		static struct option long_options[] =
+	static struct option long_options[] =
 		{
 			{"verbose", no_argument, &verbose, 1},
 			{"reboot", no_argument, &reboot_flag, 1},
@@ -110,15 +102,27 @@ int main(int argc, char *argv[]) {
 			{"sc55-txt", required_argument, 0, 'T'},
 			{"sc55-bmp", required_argument, 0, 'P'},
 			{"negative", required_argument, 0, 'N'},
-			{"port", required_argument, 0, 'p'},
 			{"romset", required_argument, 0, 'b'},
 			{"midi", required_argument, 0, 'M'},
 			{0, 0, 0, 0}
 		};
-		/* getopt_long stores the option index here. */
-		int option_index = 0;
+	char optstr[32] = "hs:t:T:b:mgrvM:P:N";
+	
+	// The MIDI backend may add some more short options
+	// Be sure that strlen(optstr) remains <32
+	// Could also generate new string of arboitrary
+	// but don't really wanna mess with malloc/free
+	// for this bit
+	mididev_add_optstr(optstr);
+
+	opterr = 1;
+	if(argc == 1) {
+		print_usage();
+		return -1;
+	}
+	while(1) {
 		
-		c = getopt_long(argc, argv, "hs:t:T:p:b:mgrvM:P:N", long_options, &option_index);
+		c = getopt_long(argc, argv, optstr, long_options, NULL);
 		
 		// End of options
 		if(c == -1)
@@ -135,9 +139,6 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'T':
 				strncpy(sc55_text, optarg, 32);
-				break;
-			case 'p':
-				mpubase = (int)strtol(optarg, NULL, 16);
 				break;
 			case 'b':
 				if(strcmp(optarg, "old")==0) {
@@ -186,28 +187,28 @@ int main(int argc, char *argv[]) {
 			case 'v':
 				verbose = 1;
 				break;
+			case ':':
 			case '?':
 			case 'h':
-			default:
 				print_usage();
 				return -1;
+			default:
+				mididev_parse_arg(c, optarg);
 		}
 	}
-
-	// Reset/init the MPU401 interface
-	if(mpu401_rst(mpubase) == -1) {
-		fprintf(stderr, "ERROR: MPU401 not answering at port 0x%X.\n", mpubase);
-			printf("%d\n", clock());
+	
+	// Reset/init the MIDI interface
+	if(mididev_init() == -1) {
+		fprintf(stderr, "Error initializing midi interface.\n");
 		return -1;
 	}
-	mpu401_uart(mpubase);
 	
 	// -r/--reboot
 	if(reboot_flag) {
 		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Rebooting MT32-PI and waiting 5 seconds.\n");
-		mpu401_send_bytes(mpubase, reboot_sysex, 4);
+		mididev_send_bytes(reboot_sysex, 4);
 		start = clock();
 		while((clock()-start)/CLOCKS_PER_SEC < 5);
 	}
@@ -218,13 +219,13 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Switching to MT-32 mode.\n");
 		cmd_sysex[2] = 0x03;
 		cmd_sysex[3] = 0x00;
-		mpu401_send_bytes(mpubase, cmd_sysex, 5);
+		mididev_send_bytes(cmd_sysex, 5);
 	} else if(mode==MODE_FLUID) {
 		if(verbose)
 			fprintf(stderr, "Switching to FluidSynth mode.\n");
 		cmd_sysex[2] = 0x03;
 		cmd_sysex[3] = 0x01;
-		mpu401_send_bytes(mpubase, cmd_sysex, 5);
+		mididev_send_bytes(cmd_sysex, 5);
 	}
 	
 	// -b/--romset
@@ -233,19 +234,19 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Switching to old MT-32 romset.\n");
 		cmd_sysex[2] = 0x01;
 		cmd_sysex[3] = 0x00;
-		mpu401_send_bytes(mpubase, cmd_sysex, 5);
+		mididev_send_bytes(cmd_sysex, 5);
 	} else if(romset==ROM_NEW) {
 		if(verbose)
 			fprintf(stderr, "Switching to new MT-32 romset.\n");
 		cmd_sysex[2] = 0x01;
 		cmd_sysex[3] = 0x01;
-		mpu401_send_bytes(mpubase, cmd_sysex, 5);
+		mididev_send_bytes(cmd_sysex, 5);
 	} else if(romset==ROM_CM32L) {
 		if(verbose)
 			fprintf(stderr, "Switching to CM-32L romset.\n");
 		cmd_sysex[2] = 0x01;
 		cmd_sysex[3] = 0x02;
-		mpu401_send_bytes(mpubase, cmd_sysex, 5);
+		mididev_send_bytes(cmd_sysex, 5);
 	}
 	
 	// -s/--soundfont
@@ -254,7 +255,7 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Switching SoundFont to #%d.\n", soundfont);
 		cmd_sysex[2] = 0x02;
 		cmd_sysex[3] = soundfont;
-		mpu401_send_bytes(mpubase, cmd_sysex, 5);
+		mididev_send_bytes(cmd_sysex, 5);
 	}
 	
 	// --mt32-reset
@@ -262,7 +263,7 @@ int main(int argc, char *argv[]) {
 		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Sending MT-32 reset and waiting 55ms.\n");
-		mpu401_send_bytes(mpubase, mt32_reset, 8);
+		mididev_send_bytes(mt32_reset, 8);
 		start = clock();
 		while(clock()-start < 55);
 	}
@@ -272,7 +273,7 @@ int main(int argc, char *argv[]) {
 		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Sending GM reset and waiting 55ms.\n");
-		mpu401_send_bytes(mpubase, gm_reset, 6);
+		mididev_send_bytes(gm_reset, 6);
 		start = clock();
 		while(clock()-start < 55);
 	}
@@ -282,7 +283,7 @@ int main(int argc, char *argv[]) {
 		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Sending GS reset and waiting 55ms.\n");
-		mpu401_send_bytes(mpubase, gs_reset, 11);
+		mididev_send_bytes(gs_reset, 11);
 		start = clock();
 		while(clock()-start < 55);
 	}
@@ -292,7 +293,7 @@ int main(int argc, char *argv[]) {
 		if(verbose)
 			fprintf(stderr, "Displaying \"%s\" (MT-32 mode).\n", mt32_text);
 		str_to_sysex_disp_mt32(sysexbuf, mt32_text);
-		mpu401_send_bytes(mpubase, sysexbuf, 30);
+		mididev_send_bytes(sysexbuf, 30);
 	}
 	
 	// -T/--sc55-txt
@@ -301,7 +302,7 @@ int main(int argc, char *argv[]) {
 		if(verbose)
 			fprintf(stderr, "Displaying \"%s\" (SC-55 mode).\n", sc55_text);
 		se_len = str_to_sysex_disp_sc55(sysexbuf, sc55_text);
-		mpu401_send_bytes(mpubase, sysexbuf, se_len);
+		mididev_send_bytes(sysexbuf, se_len);
 	}
 	
 	// -M/--midi "C0 01 C0 DE"
@@ -309,7 +310,7 @@ int main(int argc, char *argv[]) {
 		//int i;
 		if(verbose)
 			fprintf(stderr, "Sending %d custom MIDI bytes.\n", custom_midi_len);
-		mpu401_send_bytes(mpubase, custom_midi_buf, custom_midi_len);
+		mididev_send_bytes(custom_midi_buf, custom_midi_len);
 		/*for(i=0; i<custom_midi_len; i++) {
 			fprintf(stderr, "%02X ", custom_midi_buf[i]);
 		}
@@ -321,11 +322,10 @@ int main(int argc, char *argv[]) {
 		if(verbose)
 			fprintf(stderr, "Displaying %s.\n", sc55_bmp_fname);
 		bmp_to_sysex_disp_sc55(sysexbuf, sc55_bmp_fname, pic_negative_flag);
-		mpu401_send_bytes(mpubase, sysexbuf, 74);
+		mididev_send_bytes(sysexbuf, 74);
 	}
 
-	// Send an MPU401 reset that will not be ACKed
-	mpu401_rst_nowait(mpubase);
+	mididev_deinit();
 
 	return 0;
 }
@@ -432,9 +432,9 @@ static void print_usage(void) {
 	printf("OPTIONS:\n");
 	printf( "-h/--help: Print this info.\n"
 			"-v/--verbose: Be verbose about what is going on.\n"
-			"-r/--reboot: Reboot the Pi. Will block for a few secs to give it time.\n"
-			"-p/--port [ADDR]: Set the port address of the MPU401 interface. Default: 330.\n"
-			"-m/--mt32: Switch mt32-pi to MT-32 mode.\n"
+			"-r/--reboot: Reboot the Pi. Will block for a few secs to give it time.\n");
+	mididev_print_usage();
+	printf("-m/--mt32: Switch mt32-pi to MT-32 mode.\n"
 			"-g/--fluidsynth: Switch mt32-pi to FluidSynth mode.\n"
 			"-b/--romset [old, new, cm32l]: Switch MT-32 romset.\n"
 			"-s/--soundfont [NUMBER]: Set FluidSynth SoundFont.\n" 
