@@ -16,12 +16,14 @@ MODE = s
 
 all: mt32-pi.exe
 
-mt32-pi.exe: mt32-pi.c mpu401.c
-        wcl -zp2 -lr -we -d0 -y -0 -s -m$(MODE) -wx -fe=mt32-pi.exe -fm=mt32-pi.map *.c
-        
+mt32-pi.exe: ..\COMMON~1\mt32-pi.c mpu401.c ..\COMMON~1\getopt.c
+	wcl -i=..\COMMON~1\ -zp2 -lr -we -d0 -y -0 -s -m$(MODE) -wx -fe=mt32-pi.exe -fm=mt32-pi.map *.c ..\COMMON~1\*.c 
+
+dist: mt32-pi.exe .symbolic
+	copy /Y MT32-PI.EXE ..\dos_bin\
 
 clean: .symbolic
-        del *.obj
-        del *.map
-        del mt32-pi.exe
+	del *.obj
+	del *.map
+	del mt32-pi.exe
 
