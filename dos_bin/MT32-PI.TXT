@@ -28,7 +28,8 @@ OPTIONS:
   -N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
   -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
 
-You may specify multiple options, i.e. MT32-PI.EXE -m -t "Hello, World!" will first send the MT-32 mode command and then the screen text.
+You may specify multiple options, i.e. MT32-PI.EXE -m -t "Hello, World!" will
+first send the MT-32 mode command and then the screen text.
 
 
 #### BSD-License ####
