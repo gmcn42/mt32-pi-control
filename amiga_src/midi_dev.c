@@ -1,3 +1,19 @@
+/*
+ * mt32-pi-control
+ *
+ * An mt32-pi control program for DOS PCs
+ * and Amiga computers
+ *
+ * Copyright (C) 2021 Andreas Zdziarstek
+ *
+ * parts of camd and serial code taken from
+ * https://github.com/dwhinham/minisysex
+ *
+ * Copyright (c) 2020 Dale Whinham
+ * Thanks! :)
+ *
+ */
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>

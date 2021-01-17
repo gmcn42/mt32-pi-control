@@ -1,3 +1,12 @@
+/*
+ * mt32-pi-control
+ *
+ * An mt32-pi control program for DOS PCs
+ * and Amiga computers
+ *
+ * Copyright (C) 2021 Andreas Zdziarstek
+ */
+
 #ifndef MIDI_DEV_H
 #define MIDI_DEV_H
 
