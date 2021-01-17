@@ -36,7 +36,6 @@ OPTIONS:
   -h/--help: Print this info.
   -v/--verbose: Be verbose about what is going on.
   -r/--reboot: Reboot the Pi. Will block for a few secs to give it time.
-  -p [ADDR]: Set the port address of the MPU401 interface. Default: 330.
   -m/--mt32: Switch mt32-pi to MT-32 mode.
   -g/--fluidsynth: Switch mt32-pi to FluidSynth mode.
   -b/--romset [old, new, cm32l]: Switch MT-32 romset.
