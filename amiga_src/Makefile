@@ -10,9 +10,13 @@ AS =  $(PREFIX)/m68k-amigaos-as
 VPATH = .:../common_src
 INCLUDE = -I../common_src
 
-CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -mregparm -Wall -Werror -Wno-pointer-sign -std=gnu99 
+#CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -mregparm -Wall -Werror -Wno-pointer-sign -std=gnu99 
 
-CXXFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -mregparm -Wall -Werror
+CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -Wall -Werror -Wno-pointer-sign -std=gnu99
+
+CXXFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -Wall -Werror
+
+LIBS = -lamiga
 
 OBJ = mt32-pi.o midi_dev.o getopt.o version.o
 
@@ -24,7 +28,7 @@ OBJ = mt32-pi.o midi_dev.o getopt.o version.o
 
 
 $(PROGRAM_NAME) : $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
 clean :

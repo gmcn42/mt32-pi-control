@@ -118,8 +118,9 @@ int main(int argc, char *argv[]) {
 	opterr = 1;
 	if(argc == 1) {
 		print_usage();
-		return -1;
+		return EXIT_FAILURE;
 	}
+	
 	while(1) {
 		
 		c = getopt_long(argc, argv, optstr, long_options, NULL);
@@ -149,7 +150,7 @@ int main(int argc, char *argv[]) {
 					romset = ROM_CM32L;
 				} else {
 					fprintf(stderr, "%s is not a recognized romset.\n", optarg);
-					return -1;
+					return EXIT_FAILURE;
 				}
 				break;
 			case 'm':
@@ -191,16 +192,17 @@ int main(int argc, char *argv[]) {
 			case '?':
 			case 'h':
 				print_usage();
-				return -1;
+				return EXIT_FAILURE;
 			default:
 				mididev_parse_arg(c, optarg);
 		}
+		
 	}
 	
 	// Reset/init the MIDI interface
 	if(mididev_init() == -1) {
 		fprintf(stderr, "Error initializing midi interface.\n");
-		return -1;
+		return EXIT_FAILURE;
 	}
 	
 	// -r/--reboot
@@ -327,7 +329,7 @@ int main(int argc, char *argv[]) {
 
 	mididev_deinit();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 static void str_to_sysex_disp_mt32(unsigned char *sysexbuf, const char *str) {
