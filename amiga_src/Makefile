@@ -9,12 +9,13 @@ AS =  $(PREFIX)/m68k-amigaos-as
 
 VPATH = .:../common_src
 INCLUDE = -I../common_src
+DEFINE = -DPROGRAM_NAME='"$(PROGRAM_NAME)"'
 
 #CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -mregparm -Wall -Werror -Wno-pointer-sign -std=gnu99 
 
-CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -Wall -Werror -Wno-pointer-sign -std=gnu99
+CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -Wall -Werror -Wno-pointer-sign -std=gnu99 $(DEFINE)
 
-CXXFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -Wall -Werror
+CXXFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -Wall -Werror $(DEFINE)
 
 LIBS = -lamiga
 

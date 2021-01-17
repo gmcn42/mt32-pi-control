@@ -35,6 +35,10 @@
 #include "midi_dev.h"
 #include "getopt.h"
 
+#ifndef PROGRAM_NAME
+	#define PROGRAM_NAME "MT32-PI.EXE"
+#endif
+
 typedef enum {
 	MODE_UNCHANGED,
 	MODE_MUNT,
@@ -430,7 +434,7 @@ static unsigned char roland_checksum(const unsigned char *buf, unsigned short le
 }
 
 static void print_usage(void) {
-	printf("USAGE: MT32-PI.EXE [OPTIONS]\n");
+	printf("USAGE: " PROGRAM_NAME " [OPTIONS]\n");
 	printf("OPTIONS:\n");
 	printf( "-h/--help: Print this info.\n"
 			"-v/--verbose: Be verbose about what is going on.\n"
