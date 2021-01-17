@@ -150,8 +150,8 @@ int mididev_send_bytes(const unsigned char *buf, int len) {
 }
 
 void mididev_print_usage(void) {
-	printf("-S: Use direct serial port access instead of camd.library\n");
-	printf("-l: The camd output location to connect to (Default: out.0)\n");
+	printf("-S: Use direct serial port access instead of camd.library.\n");
+	printf("-l: The camd output location to connect to. (Default: out.0)\n");
 }
 
 void mididev_add_optstr(char *optstr) {
