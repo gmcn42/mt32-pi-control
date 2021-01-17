@@ -36,7 +36,7 @@ clean :
 	rm -f $(OBJ) $(PROGRAM_NAME)
 
 .PHONY: dist
-dist: 
+dist: $(PROGRAM_NAME) 
 	cp -v $(PROGRAM_NAME) ../amiga_bin/
 	cp -v *.bmp ../amiga_bin/
 
