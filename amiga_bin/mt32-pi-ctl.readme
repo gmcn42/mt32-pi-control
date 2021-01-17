@@ -7,6 +7,11 @@ Program source available at https://github.com/gmcn42/mt32-pi-control
 The mt32-pi synthesizer lives at https://github.com/dwhinham/mt32-pi
 
 
+#### Installation ####
+
+Just copy mt32-pi-ctl somewhere in your PATH.
+
+
 #### Usage Summary ####
 
 mt32-pi-ctl accepts the following UNIX-style parameters:
