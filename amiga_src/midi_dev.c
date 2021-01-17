@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -10,12 +9,21 @@ typedef ULONG Tag;
 #define TAG_END   (0L)
 
 #include <midi/mididefs.h>
+#include <devices/serial.h>
+#include <proto/alib.h>
 #include <proto/camd.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 
 #include "midi_dev.h"
 
+#define MIDI_BAUD_RATE 31250L
+
+// Serial stuff
+static struct MsgPort* msg_port = NULL;
+static struct IOExtSer* io_serial = NULL;
+
+// Camd stuff
 struct Library* CamdBase = NULL;
 static struct MidiNode* midi_node = NULL;
 static struct MidiLink* midi_link = NULL;
@@ -26,7 +34,28 @@ static char camd_out[32] = "out.0";
 
 int mididev_init(void) {
 	if(use_direct_serial) {
-		printf("Using direct serial port access\n");
+		if (!(msg_port = CreatePort(NULL, 0L))) {
+			fprintf(stderr, "Failed to create port.\n");
+			return -1;
+		}
+
+		if (!(io_serial = (struct IOExtSer*) CreateExtIO(msg_port, sizeof(struct IOExtSer)))) {
+			fprintf(stderr, "Failed to create I/O request.\n");
+			return -1;
+		}
+
+		if (OpenDevice(SERIALNAME, 0L, (struct IORequest*) io_serial, 0L)) {
+			fprintf(stderr, "Failed to open " SERIALNAME);
+			return false;
+		}
+
+		io_serial->io_Baud = MIDI_BAUD_RATE;
+		io_serial->io_SerFlags = SERF_RAD_BOOGIE | SERF_XDISABLED;
+		io_serial->io_WriteLen = 8;
+		io_serial->io_StopBits = 1;
+		io_serial->IOSer.io_Command = SDCMD_SETPARAMS;
+		DoIO((struct IORequest*) io_serial);
+
 		return 0;
 	}
 
@@ -58,8 +87,22 @@ int mididev_init(void) {
 
 int mididev_deinit(void) {
 	if(use_direct_serial) {
+		if (io_serial) {
+			if (io_serial->IOSer.io_Device)
+				CloseDevice((struct IORequest*) io_serial);
+
+			DeleteExtIO((struct IORequest*) io_serial);
+			io_serial = NULL;
+		}
+
+		if (msg_port) {
+			DeletePort(msg_port);
+			msg_port = NULL;
+		}
+
 		return 0;
 	}
+
 	if (midi_link) {
 		RemoveMidiLink(midi_link);
 		midi_link = NULL;
@@ -73,14 +116,20 @@ int mididev_deinit(void) {
 
 int mididev_send_bytes(const unsigned char *buf, int len) {
 	if(len==0) return 0;
+	
+	// We're not doing any sanity checking on serial port writes
+	// so if someone wants to send corrupt MIDI bytes
+	// with -M for debugging or whatever they can do that
 	if(use_direct_serial) {
-		for(short i=0; i<len; i++) {
-			printf("%02X ", buf[i]);
-		}
-		printf("\n");
+		io_serial->IOSer.io_Length = (ULONG) len; 
+		io_serial->IOSer.io_Data = (APTR) buf; 
+		io_serial->IOSer.io_Command = CMD_WRITE; 
+		DoIO((struct IORequest*) io_serial);
 		return 0;
 	}
-	
+
+	// CAMD however gets unhappy if we try to send weird stuff
+	// so here we're doing minimal checking beforehand.
 	if(buf[0] == MS_SysEx && buf[len-1] == MS_EOX) {
 		PutSysEx(midi_link, (UBYTE*)buf);
 	} else if (len==3) {
