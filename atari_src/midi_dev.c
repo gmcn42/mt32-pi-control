@@ -29,6 +29,12 @@ int mididev_send_bytes(const unsigned char *buf, int len) {
 		fprintf(stderr, "Error: Non-SysEx message with more than 3 bytes.\n");
 		return -1;
 	}
+	
+	//fprintf(stderr, "len:%d end:%02X\n", len, buf[len-1]); 
+	//	for(int i=0; i<len; i++) {
+	//		fprintf(stderr, "%02X ", buf[i]);
+	//	}
+//fprintf(stderr, "\n");
 
 	return 0;
 }

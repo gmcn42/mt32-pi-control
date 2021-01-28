@@ -35,6 +35,10 @@
 #include "midi_dev.h"
 #include "getopt.h"
 
+#ifdef USE_CUSTOM_FILE_IO
+#include "fio.h"
+#endif
+
 #ifndef PROGRAM_NAME
 	#define PROGRAM_NAME "MT32-PI.EXE"
 #endif
@@ -71,6 +75,7 @@ static unsigned char custom_midi_buf[64];
 static int custom_midi_len = 0;
 
 static char sc55_bmp_fname[64] = {'\0'};
+static char syx_fname[64] = {'\0'};
 
 static unsigned char sysexbuf[74];
 static char mt32_text[21] = {'\0'};
@@ -89,6 +94,9 @@ int main(int argc, char *argv[]) {
 		soundfont = -1;
 	static mt32pi_mode_t mode = MODE_UNCHANGED;
 	static mt32pi_romset_t romset = ROM_UNCHANGED;
+	#ifdef ARGV_NO_BASENAME
+	argv[0] = PROGRAM_NAME;
+	#endif
 
 	int c;
 	static struct option long_options[] =
@@ -108,9 +116,10 @@ int main(int argc, char *argv[]) {
 			{"negative", required_argument, 0, 'N'},
 			{"romset", required_argument, 0, 'b'},
 			{"midi", required_argument, 0, 'M'},
+			{"syx", required_argument, 0, 'Y'},
 			{0, 0, 0, 0}
 		};
-	char optstr[32] = "hs:t:T:b:mgrvM:P:N";
+	char optstr[32] = "hs:t:T:b:mgrvM:P:NY:";
 	
 	// The MIDI backend may add some more short options
 	// Be sure that strlen(optstr) remains <32
@@ -122,7 +131,11 @@ int main(int argc, char *argv[]) {
 	opterr = 1;
 	if(argc == 1) {
 		print_usage();
+		#ifndef NO_ERROR_ON_HELP
 		return EXIT_FAILURE;
+		#else
+		return EXIT_SUCCESS;
+		#endif
 	}
 	
 	while(1) {
@@ -184,10 +197,21 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			case 'P':
+				if(strlen(optarg) > 63) {
+					fprintf(stderr, "Sorry, the filename is too long!\n");
+					return EXIT_FAILURE;
+				}
 				strncpy(sc55_bmp_fname, optarg, 64);
 				break;
 			case 'N':
 				pic_negative_flag = 1;
+				break;
+			case 'Y':
+				if(strlen(optarg) > 63) {
+					fprintf(stderr, "Sorry, the filename is too long!\n");
+					return EXIT_FAILURE;
+				}
+				strncpy(syx_fname, optarg, 64);
 				break;
 			case 'v':
 				verbose = 1;
@@ -196,7 +220,11 @@ int main(int argc, char *argv[]) {
 			case '?':
 			case 'h':
 				print_usage();
+				#ifndef NO_ERROR_ON_HELP
 				return EXIT_FAILURE;
+				#else
+				return EXIT_SUCCESS;
+				#endif
 			default:
 				mididev_parse_arg(c, optarg);
 		}
@@ -313,14 +341,9 @@ int main(int argc, char *argv[]) {
 	
 	// -M/--midi "C0 01 C0 DE"
 	if(custom_midi_len > 0) {
-		//int i;
 		if(verbose)
 			fprintf(stderr, "Sending %d custom MIDI bytes.\n", custom_midi_len);
 		mididev_send_bytes(custom_midi_buf, custom_midi_len);
-		/*for(i=0; i<custom_midi_len; i++) {
-			fprintf(stderr, "%02X ", custom_midi_buf[i]);
-		}
-		fprintf(stderr, "\n");*/
 	}
 	
 	// -P/--sc55-bmp FILE.BMP and -N
@@ -330,7 +353,101 @@ int main(int argc, char *argv[]) {
 		bmp_to_sysex_disp_sc55(sysexbuf, sc55_bmp_fname, pic_negative_flag);
 		mididev_send_bytes(sysexbuf, 74);
 	}
+	
+	// -Y/--syx FILE.SYX
+	if(syx_fname[0] != '\0') {
+		unsigned char fbuf[512];
+		#ifdef USE_CUSTOM_FILE_IO
+		struct fiofile_t fh;
+		int ret;
+		#else
+		FILE *fh;
+		#endif
 
+		if(verbose)
+			fprintf(stderr, "Sending %s.\n", syx_fname);
+		
+		#ifdef USE_CUSTOM_FILE_IO
+		ret = fio_open(syx_fname, FIO_OPEN_RD, &fh);
+		if(ret!=0) {
+			fprintf(stderr, "ERROR: Can't open %s.\n", syx_fname);
+			return EXIT_FAILURE;
+		}
+		#else
+		fh = fopen(syx_fname, "r");
+		if(fh==NULL) {
+			fprintf(stderr, "ERROR: Can't open %s.\n", syx_fname);
+			return EXIT_FAILURE;
+		}
+		#endif
+		// go through file
+		while(1) {
+			clock_t start;
+			int i, found_start, found_end, start_index, end_index;
+			int n;
+			#ifdef USE_CUSTOM_FILE_IO
+			long int read_start = fh.curpos;
+			n = fio_read(&fh, fbuf, 512);
+			#else
+			long int read_start = ftell(fh);
+			n = fread(fbuf, 1, 512, fh);
+			#endif
+			
+			found_start = 0;
+			found_end = 0;
+			// search for next sysex in buffer
+			start_index = 0;
+			end_index = 0;
+			for(i=0; i<n; i++) {
+				if(found_start && found_end) break;
+				
+				if(fbuf[i] == 0xF0) {
+					if(found_start) {
+						fprintf(stderr, "ERROR: Malformed SysEx in %s.\n", syx_fname);
+						return EXIT_FAILURE;
+					}
+					found_start = 1;
+					start_index = i;
+					fprintf(stderr, "pstart:%d %02X\n", start_index, fbuf[start_index]); 
+				}
+				
+				if(found_start && fbuf[i] == 0xF7) {
+					if(found_end) {
+						fprintf(stderr, "ERROR: Malformed SysEx in %s.\n", syx_fname);
+						return EXIT_FAILURE;
+					}
+					found_end = 1;
+					end_index = i;
+					fprintf(stderr, "pend:%d %02X\n", end_index, fbuf[end_index]); 
+				}
+			}
+			fprintf(stderr, "265:%02x\n", fbuf[265]);
+						fprintf(stderr, "rs:%ld offset:%d p:%d ps:%d pe:%d\n", read_start, end_index - start_index+1, end_index - start_index, start_index, end_index);
+			if(!found_start || !found_end) {
+				fprintf(stderr, "ERROR: Malformed or too long SysEx in %s.\n", syx_fname);
+				return EXIT_FAILURE;
+			}
+			mididev_send_bytes(fbuf+start_index, end_index - start_index+1);
+			// Wait grace period
+			start = clock();
+			while(clock()-start < 55);
+			#ifdef USE_CUSTOM_FILE_IO
+			if(read_start + end_index+1 == fh.curpos)
+				break;
+			fio_seek(&fh, FIO_SEEK_START, read_start + end_index+1);
+			#else
+			if(read_start + end_index+1 == ftell(fh))
+				break;
+			fseek(fh, read_start + end_index+1, SEEK_SET);
+			#endif
+		}
+		#ifdef USE_CUSTOM_FILE_IO
+		fio_close(&fh);
+		#else
+		fclose(fh);
+		#endif
+	}
+	
 	mididev_deinit();
 
 	return EXIT_SUCCESS;
@@ -378,23 +495,54 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 	const unsigned char prefix[7] = { 0xF0, 0x41, 0x10, 0x45, 0x12, 0x10, 0x01 };
 	int i;
 	unsigned char fbuf[64];
+	#ifdef USE_CUSTOM_FILE_IO
+	struct fiofile_t fh;
+	int ret;
+	#else
 	FILE *fh;
+	#endif
 	unsigned char pix_offset;
 	memset(sysexbuf, '\0', 74);
 	/* Copy SysEx start and display cmd into msg */ 
 	memcpy(sysexbuf, prefix, 7);
+	#ifdef USE_CUSTOM_FILE_IO
+	ret = fio_open(fname, FIO_OPEN_RD, &fh);
+	if(ret!=0) {
+		fprintf(stderr, "ERROR: Can't open %s.\n", fname);
+		abort();
+	}
+	#else
 	fh = fopen(fname, "r");
 	if(fh==NULL) {
 		fprintf(stderr, "ERROR: Can't open %s.\n", sc55_bmp_fname);
 		abort();
 	}
+	#endif
 	// check if this is a BMP
+	#ifdef USE_CUSTOM_FILE_IO
+	fio_read(&fh, fbuf, 2);
+	#else
 	fread(fbuf, 1, 2, fh);
+	#endif
 	if(!(fbuf[0]=='B' && fbuf[1]=='M')) {
 		fprintf(stderr, "ERROR: %s is not a valid BMP file.\n", sc55_bmp_fname);
+		#ifdef USE_CUSTOM_FILE_IO
+		fio_close(&fh);
+		#else
 		fclose(fh);
+		#endif
 		abort();
 	}
+	
+	#ifdef USE_CUSTOM_FILE_IO
+	// check offset of pixel array
+	fio_seek(&fh, FIO_SEEK_START, 0xA);
+	fio_read(&fh, &pix_offset, 1);
+	// read pixel array
+	fio_seek(&fh, FIO_SEEK_START, pix_offset);
+	fio_read(&fh, fbuf, 64);
+	fio_close(&fh);
+	#else
 	// check offset of pixel array
 	fseek(fh, 0xA, SEEK_SET);
 	fread(&pix_offset, 1, 1, fh);
@@ -402,6 +550,7 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 	fseek(fh, pix_offset, SEEK_SET);
 	fread(fbuf, 1, 64, fh);
 	fclose(fh);
+	#endif
 	
 	// Perform bit-manipulation magic to
 	// build the SysEx
@@ -436,10 +585,25 @@ static unsigned char roland_checksum(const unsigned char *buf, unsigned short le
 static void print_usage(void) {
 	printf("USAGE: " PROGRAM_NAME " [OPTIONS]\n");
 	printf("OPTIONS:\n");
-	printf( "-h/--help: Print this info.\n"
+	printf( "--help: Print this info.\n"
 			"-v/--verbose: Be verbose about what is going on.\n"
 			"-r/--reboot: Reboot the Pi. Will block for a few secs to give it time.\n");
 	mididev_print_usage();
+	#ifdef ATARI_ST_QUOTING
+	printf("-m/--mt32: Switch mt32-pi to MT-32 mode.\n"
+			"-g/--fluidsynth: Switch mt32-pi to FluidSynth mode.\n"
+			"-b/--romset [old, new, cm32l]: Switch MT-32 romset.\n"
+			"-s/--soundfont [NUMBER]: Set FluidSynth SoundFont.\n" 
+			"--mt32-reset: Send an MT-32 reset SysEx message.\n"
+			"--gm-reset: Send a GM reset SysEx message.\n"
+			"--gs-reset: Send a GS reset SysEx message.\n"
+			"\'-tSome text\': Send an MT-32 text display SysEx.\n"
+			"\'-TSome text\': Send an SC-55 text display SysEx.\n"
+			"-P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)\n"
+			"-N/--negative: Reverse image color. Use with \'-P/--sc55-bmp\'.\n"
+			"\'-M C0 01 C0 DE\': Send a list of custom MIDI bytes.\n"
+			"NOTE: If you use quotes in arguments, put those before unquoted ones.\n" );
+	#else
 	printf("-m/--mt32: Switch mt32-pi to MT-32 mode.\n"
 			"-g/--fluidsynth: Switch mt32-pi to FluidSynth mode.\n"
 			"-b/--romset [old, new, cm32l]: Switch MT-32 romset.\n"
@@ -452,5 +616,6 @@ static void print_usage(void) {
 			"-P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)\n"
 			"-N/--negative: Reverse image color. Use with \'-P/--sc55-bmp\'.\n"
 			"-M/--midi \"C0 01 C0 DE\": Send a list of custom MIDI bytes.\n" );
+	#endif
 }
 
