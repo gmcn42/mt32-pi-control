@@ -7,8 +7,8 @@
  * Copyright (C) 2021 Andreas Zdziarstek
  */
 
-#ifndef MIDI_DEV_H
-#define MIDI_DEV_H
+#ifndef __MIDI_DEV_H__
+#define __MIDI_DEV_H__
 
 int mididev_init(void);
 int mididev_deinit(void);
@@ -20,4 +20,4 @@ void mididev_print_usage(void);
 void mididev_add_optstr(char *optstr);
 int mididev_parse_arg(int c, const char *optarg);
 
-#endif /* MIDI_DEV_H */
+#endif /* __MIDI_DEV_H__ */

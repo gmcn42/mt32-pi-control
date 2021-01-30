@@ -29,11 +29,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <errno.h>
 
 #include "midi_dev.h"
 #include "getopt.h"
+#include "delay.h"
 
 #ifdef USE_CUSTOM_FILE_IO
 #include "fio.h"
@@ -231,6 +231,8 @@ int main(int argc, char *argv[]) {
 		
 	}
 	
+	fprintf(stderr, "PATH = %s\n", getenv("PATH"));
+	
 	// Reset/init the MIDI interface
 	if(mididev_init() == -1) {
 		fprintf(stderr, "Error initializing midi interface.\n");
@@ -239,12 +241,10 @@ int main(int argc, char *argv[]) {
 	
 	// -r/--reboot
 	if(reboot_flag) {
-		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Rebooting MT32-PI and waiting 5 seconds.\n");
 		mididev_send_bytes(reboot_sysex, 4);
-		start = clock();
-		while((clock()-start)/CLOCKS_PER_SEC < 5);
+		delay_ms(5000);
 	}
 	
 	// -m/--mt32 and -g/--fluidsynth
@@ -294,32 +294,26 @@ int main(int argc, char *argv[]) {
 	
 	// --mt32-reset
 	if(mt32_rst_flag) {
-		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Sending MT-32 reset and waiting 55ms.\n");
 		mididev_send_bytes(mt32_reset, 8);
-		start = clock();
-		while(clock()-start < 55);
+		delay_ms(55);
 	}
 	
 	// --gm-reset
 	if(gm_rst_flag) {
-		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Sending GM reset and waiting 55ms.\n");
 		mididev_send_bytes(gm_reset, 6);
-		start = clock();
-		while(clock()-start < 55);
+		delay_ms(55);
 	}
 	
 	// --gs-reset
 	if(gs_rst_flag) {
-		clock_t start;
 		if(verbose)
 			fprintf(stderr, "Sending GS reset and waiting 55ms.\n");
 		mididev_send_bytes(gs_reset, 11);
-		start = clock();
-		while(clock()-start < 55);
+		delay_ms(55);
 	}
 
 	// -t/--mt32-txt
@@ -382,7 +376,6 @@ int main(int argc, char *argv[]) {
 		#endif
 		// go through file
 		while(1) {
-			clock_t start;
 			int i, found_start, found_end, start_index, end_index;
 			int n;
 			#ifdef USE_CUSTOM_FILE_IO
@@ -429,8 +422,7 @@ int main(int argc, char *argv[]) {
 			}
 			mididev_send_bytes(fbuf+start_index, end_index - start_index+1);
 			// Wait grace period
-			start = clock();
-			while(clock()-start < 55);
+			delay_ms(55);
 			#ifdef USE_CUSTOM_FILE_IO
 			if(read_start + end_index+1 == fh.curpos)
 				break;
