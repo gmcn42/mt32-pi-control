@@ -1,6 +1,21 @@
+/*
+ * mt32-pi-control
+ *
+ * An mt32-pi control program for DOS PCs
+ * and Amiga computers
+ *
+ * Copyright (C) 2021 Andreas Zdziarstek
+ * 
+ * Custom file I/O interface based on
+ * DOSMID source code
+ * http://dosmid.sourceforge.net
+ *
+ * Copyright (C) 2018 Mateusz Viste
+ *
+ */
+
 #ifndef __FILE_IO_H__
 #define __FILE_IO_H__
-
 
 #define FIO_SEEK_START 0
 #define FIO_SEEK_CUR   1

@@ -292,25 +292,25 @@ int main(int argc, char *argv[]) {
 	// --mt32-reset
 	if(mt32_rst_flag) {
 		if(verbose)
-			fprintf(stderr, "Sending MT-32 reset and waiting 55ms.\n");
+			fprintf(stderr, "Sending MT-32 reset and waiting 100ms.\n");
 		mididev_send_bytes(mt32_reset, 8);
-		delay_ms(55);
+		delay_ms(100);
 	}
 	
 	// --gm-reset
 	if(gm_rst_flag) {
 		if(verbose)
-			fprintf(stderr, "Sending GM reset and waiting 55ms.\n");
+			fprintf(stderr, "Sending GM reset and waiting 100ms.\n");
 		mididev_send_bytes(gm_reset, 6);
-		delay_ms(55);
+		delay_ms(100);
 	}
 	
 	// --gs-reset
 	if(gs_rst_flag) {
 		if(verbose)
-			fprintf(stderr, "Sending GS reset and waiting 55ms.\n");
+			fprintf(stderr, "Sending GS reset and waiting 100ms.\n");
 		mididev_send_bytes(gs_reset, 11);
-		delay_ms(55);
+		delay_ms(100);
 	}
 
 	// -t/--mt32-txt
@@ -383,7 +383,6 @@ int main(int argc, char *argv[]) {
 					}
 					found_start = 1;
 					start_index = i;
-					fprintf(stderr, "pstart:%d %02X\n", start_index, fbuf[start_index]); 
 				}
 				
 				if(found_start && fbuf[i] == 0xF7) {
@@ -393,18 +392,15 @@ int main(int argc, char *argv[]) {
 					}
 					found_end = 1;
 					end_index = i;
-					fprintf(stderr, "pend:%d %02X\n", end_index, fbuf[end_index]); 
 				}
 			}
-			fprintf(stderr, "265:%02x\n", fbuf[265]);
-						fprintf(stderr, "rs:%ld offset:%d p:%d ps:%d pe:%d\n", read_start, end_index - start_index+1, end_index - start_index, start_index, end_index);
 			if(!found_start || !found_end) {
 				fprintf(stderr, "ERROR: Malformed or too long SysEx in %s.\n", syx_fname);
 				return EXIT_FAILURE;
 			}
 			mididev_send_bytes(fbuf+start_index, end_index - start_index+1);
 			// Wait grace period
-			delay_ms(55);
+			delay_ms(100);
 			if(read_start + end_index+1 == fh.curpos)
 				break;
 			fio_seek(&fh, FIO_SEEK_START, read_start + end_index+1);
