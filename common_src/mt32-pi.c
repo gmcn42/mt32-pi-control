@@ -34,10 +34,7 @@
 #include "midi_dev.h"
 #include "getopt.h"
 #include "delay.h"
-
-#ifdef USE_CUSTOM_FILE_IO
-#include "fio.h"
-#endif
+#include "file_io.h"
 
 #ifndef PROGRAM_NAME
 	#define PROGRAM_NAME "MT32-PI.EXE"
@@ -351,40 +348,25 @@ int main(int argc, char *argv[]) {
 	// -Y/--syx FILE.SYX
 	if(syx_fname[0] != '\0') {
 		unsigned char fbuf[512];
-		#ifdef USE_CUSTOM_FILE_IO
-		struct fiofile_t fh;
+		struct file_t fh;
 		int ret;
-		#else
-		FILE *fh;
-		#endif
 
 		if(verbose)
 			fprintf(stderr, "Sending %s.\n", syx_fname);
 		
-		#ifdef USE_CUSTOM_FILE_IO
-		ret = fio_open(syx_fname, FIO_OPEN_RD, &fh);
+		
+		ret = fio_open(&fh, syx_fname, FIO_OPEN_RD);
 		if(ret!=0) {
 			fprintf(stderr, "ERROR: Can't open %s.\n", syx_fname);
 			return EXIT_FAILURE;
 		}
-		#else
-		fh = fopen(syx_fname, "r");
-		if(fh==NULL) {
-			fprintf(stderr, "ERROR: Can't open %s.\n", syx_fname);
-			return EXIT_FAILURE;
-		}
-		#endif
+		
 		// go through file
 		while(1) {
 			int i, found_start, found_end, start_index, end_index;
 			int n;
-			#ifdef USE_CUSTOM_FILE_IO
 			long int read_start = fh.curpos;
 			n = fio_read(&fh, fbuf, 512);
-			#else
-			long int read_start = ftell(fh);
-			n = fread(fbuf, 1, 512, fh);
-			#endif
 			
 			found_start = 0;
 			found_end = 0;
@@ -423,21 +405,11 @@ int main(int argc, char *argv[]) {
 			mididev_send_bytes(fbuf+start_index, end_index - start_index+1);
 			// Wait grace period
 			delay_ms(55);
-			#ifdef USE_CUSTOM_FILE_IO
 			if(read_start + end_index+1 == fh.curpos)
 				break;
 			fio_seek(&fh, FIO_SEEK_START, read_start + end_index+1);
-			#else
-			if(read_start + end_index+1 == ftell(fh))
-				break;
-			fseek(fh, read_start + end_index+1, SEEK_SET);
-			#endif
 		}
-		#ifdef USE_CUSTOM_FILE_IO
 		fio_close(&fh);
-		#else
-		fclose(fh);
-		#endif
 	}
 	
 	mididev_deinit();
@@ -487,46 +459,25 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 	const unsigned char prefix[7] = { 0xF0, 0x41, 0x10, 0x45, 0x12, 0x10, 0x01 };
 	int i;
 	unsigned char fbuf[64];
-	#ifdef USE_CUSTOM_FILE_IO
-	struct fiofile_t fh;
+	struct file_t fh;
 	int ret;
-	#else
-	FILE *fh;
-	#endif
 	unsigned char pix_offset;
 	memset(sysexbuf, '\0', 74);
 	/* Copy SysEx start and display cmd into msg */ 
 	memcpy(sysexbuf, prefix, 7);
-	#ifdef USE_CUSTOM_FILE_IO
-	ret = fio_open(fname, FIO_OPEN_RD, &fh);
+	ret = fio_open(&fh, fname, FIO_OPEN_RD);
 	if(ret!=0) {
 		fprintf(stderr, "ERROR: Can't open %s.\n", fname);
 		abort();
 	}
-	#else
-	fh = fopen(fname, "r");
-	if(fh==NULL) {
-		fprintf(stderr, "ERROR: Can't open %s.\n", sc55_bmp_fname);
-		abort();
-	}
-	#endif
 	// check if this is a BMP
-	#ifdef USE_CUSTOM_FILE_IO
 	fio_read(&fh, fbuf, 2);
-	#else
-	fread(fbuf, 1, 2, fh);
-	#endif
 	if(!(fbuf[0]=='B' && fbuf[1]=='M')) {
 		fprintf(stderr, "ERROR: %s is not a valid BMP file.\n", sc55_bmp_fname);
-		#ifdef USE_CUSTOM_FILE_IO
 		fio_close(&fh);
-		#else
-		fclose(fh);
-		#endif
 		abort();
 	}
 	
-	#ifdef USE_CUSTOM_FILE_IO
 	// check offset of pixel array
 	fio_seek(&fh, FIO_SEEK_START, 0xA);
 	fio_read(&fh, &pix_offset, 1);
@@ -534,15 +485,6 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 	fio_seek(&fh, FIO_SEEK_START, pix_offset);
 	fio_read(&fh, fbuf, 64);
 	fio_close(&fh);
-	#else
-	// check offset of pixel array
-	fseek(fh, 0xA, SEEK_SET);
-	fread(&pix_offset, 1, 1, fh);
-	// read pixel array
-	fseek(fh, pix_offset, SEEK_SET);
-	fread(fbuf, 1, 64, fh);
-	fclose(fh);
-	#endif
 	
 	// Perform bit-manipulation magic to
 	// build the SysEx
