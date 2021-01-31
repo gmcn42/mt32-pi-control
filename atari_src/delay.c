@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <osbind.h>
+
+#include "delay.h"
 
 #define TIM_A_MFP 13
 #define TIM_A_XBIOS 0

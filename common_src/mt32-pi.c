@@ -35,6 +35,7 @@
 #include "getopt.h"
 #include "delay.h"
 #include "file_io.h"
+#include "miniwift.h"
 
 #ifndef PROGRAM_NAME
 	#define PROGRAM_NAME "MT32-PI.EXE"
@@ -56,6 +57,7 @@ typedef enum {
 static void str_to_sysex_disp_mt32(unsigned char *sysexbuf, const char *str);
 static int str_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *str);
 static void bmp_to_sysex_disp_sc55(unsigned char *se_array, const char *fname, int negative);
+static void strpic_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *str, int negative);
 
 static unsigned char roland_checksum(const unsigned char *buf, unsigned short len);
 
@@ -77,6 +79,7 @@ static char syx_fname[64] = {'\0'};
 static unsigned char sysexbuf[74];
 static char mt32_text[21] = {'\0'};
 static char sc55_text[33] = {'\0'};
+static char sc55_pictxt[9] = {'\0'};
 
 
 int main(int argc, char *argv[]) {
@@ -110,13 +113,14 @@ int main(int argc, char *argv[]) {
 			{"mt32-txt", required_argument, 0, 't'},
 			{"sc55-txt", required_argument, 0, 'T'},
 			{"sc55-bmp", required_argument, 0, 'P'},
+			{"sc55-btxt", required_argument, 0, 'X'},
 			{"negative", required_argument, 0, 'N'},
 			{"romset", required_argument, 0, 'b'},
 			{"midi", required_argument, 0, 'M'},
 			{"syx", required_argument, 0, 'Y'},
 			{0, 0, 0, 0}
 		};
-	char optstr[32] = "hs:t:T:b:mgrvM:P:NY:";
+	char optstr[32] = "hs:t:T:b:mgrvM:P:NY:X:";
 	
 	// The MIDI backend may add some more short options
 	// Be sure that strlen(optstr) remains <32
@@ -200,6 +204,9 @@ int main(int argc, char *argv[]) {
 				}
 				strncpy(sc55_bmp_fname, optarg, 64);
 				break;
+			case 'X':
+				strncpy(sc55_pictxt, optarg, 8);
+				break;
 			case 'N':
 				pic_negative_flag = 1;
 				break;
@@ -227,8 +234,6 @@ int main(int argc, char *argv[]) {
 		}
 		
 	}
-	
-	fprintf(stderr, "PATH = %s\n", getenv("PATH"));
 	
 	// Reset/init the MIDI interface
 	if(mididev_init() == -1) {
@@ -342,6 +347,14 @@ int main(int argc, char *argv[]) {
 		if(verbose)
 			fprintf(stderr, "Displaying %s.\n", sc55_bmp_fname);
 		bmp_to_sysex_disp_sc55(sysexbuf, sc55_bmp_fname, pic_negative_flag);
+		mididev_send_bytes(sysexbuf, 74);
+	}
+	
+	// -X/--sc55-btxt
+	if(sc55_pictxt[0] != '\0') {
+		if(verbose)
+			fprintf(stderr, "Displaying \"%s\" using bitmap mode.\n", sc55_pictxt);
+		strpic_to_sysex_disp_sc55(sysexbuf, sc55_pictxt, pic_negative_flag);
 		mididev_send_bytes(sysexbuf, 74);
 	}
 	
@@ -477,6 +490,12 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 	// check offset of pixel array
 	fio_seek(&fh, FIO_SEEK_START, 0xA);
 	fio_read(&fh, &pix_offset, 1);
+	
+	if(fh.flen - pix_offset < 64) {
+		fprintf(stderr, "ERROR: %s seems to be too small in size.\n", sc55_bmp_fname);
+		fio_close(&fh);
+		abort();
+	}
 	// read pixel array
 	fio_seek(&fh, FIO_SEEK_START, pix_offset);
 	fio_read(&fh, fbuf, 64);
@@ -488,6 +507,55 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 		unsigned char *bmprow, *sysexrow;
 		bmprow = &fbuf[i*4];
 		sysexrow = &sysexbuf[(15-i)+8];
+		sysexrow[0] = (bmprow[0]>>3) & 0x1F;
+		sysexrow[16] = ((bmprow[0]&0x07)<<2) | ((bmprow[1]>>6)&0x03);
+		sysexrow[32] = (bmprow[1]>>1)&0x1F;
+		sysexrow[48] = (bmprow[1] & 0x01)<<4;
+		if(negative) {
+			sysexrow[0] = (~sysexrow[0])&0x1F;
+			sysexrow[16] = (~sysexrow[16])&0x1F;
+			sysexrow[32] = (~sysexrow[32])&0x1F;
+			sysexrow[48] = (~sysexrow[48])&0x10;
+		}
+	}
+	sysexbuf[72] = roland_checksum(sysexbuf+5, 67);
+	sysexbuf[73] = 0xF7;
+}
+
+static void strpic_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *str, int negative) {
+	const unsigned char prefix[7] = { 0xF0, 0x41, 0x10, 0x45, 0x12, 0x10, 0x01 };
+	int i, slen;
+	unsigned char picbuf[32];
+	memset(sysexbuf, '\0', 74);
+	memset(picbuf, 0, sizeof(picbuf));
+	/* Copy SysEx start and display cmd into msg */ 
+	memcpy(sysexbuf, prefix, 7);
+	slen = strlen(str);
+	if(slen > 8) {
+		slen = 8;
+	}
+	
+	for(i=0; i<slen; i++) {
+		unsigned char dest_lshift, src_rshift;
+		unsigned char c, *destptr, j;
+		if(str[i] < 32 || str[i] > 127) {
+			continue;
+		}
+		c = str[i] - 32;
+		src_rshift = (c & 1) ? 0 : 4;
+		dest_lshift = (i & 1) ? 0 : 4;
+		destptr = (i<4) ? &picbuf[i/2] : &picbuf[(i-4)/2 + 16];
+		for(j=0; j<8; j++) {
+			destptr[j*2] |= ( (miniwi_data[c/2][j]>>src_rshift ) & 0x0F ) <<dest_lshift;
+		}
+	}
+	
+	// Perform bit-manipulation magic to
+	// build the SysEx
+	for(i=0; i<16; i++) {
+		unsigned char *bmprow, *sysexrow;
+		bmprow = &picbuf[i*2];
+		sysexrow = &sysexbuf[i+8];
 		sysexrow[0] = (bmprow[0]>>3) & 0x1F;
 		sysexrow[16] = ((bmprow[0]&0x07)<<2) | ((bmprow[1]>>6)&0x03);
 		sysexrow[32] = (bmprow[1]>>1)&0x1F;
@@ -530,7 +598,8 @@ static void print_usage(void) {
 			"\'-tSome text\': Send an MT-32 text display SysEx.\n"
 			"\'-TSome text\': Send an SC-55 text display SysEx.\n"
 			"-P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)\n"
-			"-N/--negative: Reverse image color. Use with \'-P/--sc55-bmp\'.\n"
+			"\'-X/--sc55-btxt SomeText\': Display a string on the screen as a Bitmap. (SC-55)\n"
+			"-N/--negative: Reverse color. Use with \'-P/--sc55-bmp\' or \'-X/--sc55-btxt\'.\n"
 			"\'-M C0 01 C0 DE\': Send a list of custom MIDI bytes.\n"
 			"NOTE: If you use quotes in arguments, put those before unquoted ones.\n" );
 	#else
@@ -544,7 +613,8 @@ static void print_usage(void) {
 			"-t/--mt32-txt \"Some text\": Send an MT-32 text display SysEx.\n"
 			"-T/--sc55-txt \"Some text\": Send an SC-55 text display SysEx.\n"
 			"-P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)\n"
-			"-N/--negative: Reverse image color. Use with \'-P/--sc55-bmp\'.\n"
+			"-X/--sc55-btxt \"SomeText\": Display a string on the screen as a Bitmap. (SC-55)\n"
+			"-N/--negative: Reverse color. Use with \'-P/--sc55-bmp\' or \'-X/--sc55-btxt\'.\n"
 			"-M/--midi \"C0 01 C0 DE\": Send a list of custom MIDI bytes.\n" );
 	#endif
 }
