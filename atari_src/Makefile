@@ -7,7 +7,7 @@ AS = m68k-atari-mint-as
 
 VPATH = .:../common_src
 INCLUDE = -I../common_src
-DEFINE = -DARGV_NO_BASENAME -DNO_ERROR_ON_HELP -DATARI_ST_QUOTING -DUSE_CUSTOM_DELAY -DPROGRAM_NAME='"$(PROGRAM_NAME)"'
+DEFINE = -DARGV_NO_BASENAME -DNO_ERROR_ON_HELP -DATARI_ST_QUOTING -DUSE_CUSTOM_DELAY -DPROGRAM_NAME='"$(PROGRAM_NAME)"' -DREPLACE_GETOPT
 
 CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -Wall -Werror -Wno-pointer-sign -std=c99 $(DEFINE)
 CXXFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -Wall -Werror $(DEFINE)

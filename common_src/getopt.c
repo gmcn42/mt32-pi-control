@@ -57,9 +57,6 @@
 #include <stdio.h>
 
 
-#define	REPLACE_GETOPT		/* use this getopt as the system getopt(3) */
-
-
 int	opterr = 1;		/* if error message should be printed */
 int	optind = 1;		/* index into parent argv vector */
 int	optopt = '?';		/* character checked for validity */

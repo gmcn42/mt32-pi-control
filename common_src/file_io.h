@@ -63,13 +63,13 @@
 	static int fio_open(struct file_t *f, const char *fname, int mode) {
 		switch(mode) {
 			case FIO_OPEN_RD:
-				f->fh = fopen(fname, "r");
+				f->fh = fopen(fname, "rb");
 				break;
 			case FIO_OPEN_WR:
-				f->fh = fopen(fname, "w");
+				f->fh = fopen(fname, "wb");
 				break;
 			case FIO_OPEN_RW:
-				f->fh = fopen(fname, "r+");
+				f->fh = fopen(fname, "rb+");
 				break;
 			default:
 				return -1;

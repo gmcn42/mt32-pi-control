@@ -9,7 +9,7 @@ AS =  $(PREFIX)/m68k-amigaos-as
 
 VPATH = .:../common_src
 INCLUDE = -I../common_src
-DEFINE = -DPROGRAM_NAME='"$(PROGRAM_NAME)"'
+DEFINE = -DPROGRAM_NAME='"$(PROGRAM_NAME)"' -DREPLACE_GETOPT
 
 #CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -mregparm -Wall -Werror -Wno-pointer-sign -std=gnu99 
 
