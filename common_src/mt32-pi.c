@@ -230,7 +230,10 @@ int main(int argc, char *argv[]) {
 				return EXIT_SUCCESS;
 				#endif
 			default:
-				mididev_parse_arg(c, optarg);
+				if(mididev_parse_arg(c, optarg)<0) {
+					fprintf(stderr, "Error parsing argument \"%s\"\n", optarg);
+					return EXIT_FAILURE;
+				}
 		}
 		
 	}
@@ -371,6 +374,7 @@ int main(int argc, char *argv[]) {
 		ret = fio_open(&fh, syx_fname, FIO_OPEN_RD);
 		if(ret!=0) {
 			fprintf(stderr, "ERROR: Can't open %s.\n", syx_fname);
+			mididev_deinit();
 			return EXIT_FAILURE;
 		}
 		
@@ -392,6 +396,7 @@ int main(int argc, char *argv[]) {
 				if(fbuf[i] == 0xF0) {
 					if(found_start) {
 						fprintf(stderr, "ERROR: Malformed SysEx in %s.\n", syx_fname);
+						mididev_deinit();
 						return EXIT_FAILURE;
 					}
 					found_start = 1;
@@ -401,6 +406,7 @@ int main(int argc, char *argv[]) {
 				if(found_start && fbuf[i] == 0xF7) {
 					if(found_end) {
 						fprintf(stderr, "ERROR: Malformed SysEx in %s.\n", syx_fname);
+						mididev_deinit();
 						return EXIT_FAILURE;
 					}
 					found_end = 1;
@@ -409,6 +415,7 @@ int main(int argc, char *argv[]) {
 			}
 			if(!found_start || !found_end) {
 				fprintf(stderr, "ERROR: Malformed or too long SysEx in %s.\n", syx_fname);
+				mididev_deinit();
 				return EXIT_FAILURE;
 			}
 			mididev_send_bytes(fbuf+start_index, end_index - start_index+1);
