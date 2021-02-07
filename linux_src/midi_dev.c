@@ -156,12 +156,10 @@ int mididev_parse_arg(int c, const char *optarg) {
 
 	char *firstarg = strtok(temparg, ":");
 	if(firstarg == NULL) {
-		fprintf(stderr, "firstarg\n");
 		return -1;
 	}
 	char *secondarg = firstarg + strlen(firstarg) + 1;
 	if(secondarg - temparg >= len) {
-		fprintf(stderr, "%ld %lu\n", secondarg-temparg, len);
 		return -1;
 	}
 	dst_client = (int) strtol(firstarg, NULL, 10);
