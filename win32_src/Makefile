@@ -15,7 +15,7 @@ CFLAGS = $(INCLUDE) -O2 -ffunction-sections -fdata-sections -static-libgcc -stat
 
 CXXFLAGS = $(INCLUDE) -O2 -ffunction-sections -fdata-sections -static-libgcc -static-libstdc++ -Wl,--gc-sections -Wall -Werror $(DEFINE)
 
-LIBS =
+LIBS = -lwinmm
 
 OBJ = mt32-pi.o midi_dev.o delay.o
 

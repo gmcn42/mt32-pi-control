@@ -146,6 +146,10 @@ void mididev_add_optstr(char *optstr) {
 }
 
 int mididev_parse_arg(int c, const char *optarg) {
+	if(c != 'p') {
+		fprintf(stderr, "ERROR: Unknown option \'%c\'.\n", c);
+		return -1;
+	}
 	size_t len = strlen(optarg);
 	char *temparg = (char*) malloc(len+1);
 	if(temparg == NULL) {
