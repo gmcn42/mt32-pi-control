@@ -17,17 +17,9 @@
 
 int output_port = -1;
 HMIDIOUT midi_handle = NULL;
-static volatile bool port_busy = false;
 static char *dev_optstr = "lp:";
 
 static void list_midi_outputs(void);
-void CALLBACK midi_out_cb(
-		HMIDIOUT mh,
-		UINT wMsg,
-		DWORD_PTR dwInst,
-		DWORD_PTR dwp1,
-		DWORD_PTR dwp2
-		);
 
 int mididev_init(void) {
 	if(output_port == -1) {
@@ -35,7 +27,7 @@ int mididev_init(void) {
 		return -1;
 	}
 
-	if(midiOutOpen(&midi_handle, output_port, (DWORD)(void*)midi_out_cb, 0, CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+	if(midiOutOpen(&midi_handle, output_port, 0, 0, CALLBACK_NULL) != MMSYSERR_NOERROR) {
 		fprintf(stderr, "ERROR: Could not open MIDI output port %d.\n", output_port);
 		return -1;
 	}
@@ -69,7 +61,6 @@ int mididev_send_bytes(const unsigned char *buf, int len) {
 			return -1;
 		}
 
-		port_busy = true;
 		if(midiOutLongMsg(midi_handle, &mheader, sizeof(mheader)) != MMSYSERR_NOERROR) {
 			midiOutUnprepareHeader(midi_handle, &mheader, sizeof(mheader));
 			free(tempbuf);
@@ -77,12 +68,11 @@ int mididev_send_bytes(const unsigned char *buf, int len) {
 			return -1;
 		}
 
-		// Wait for message to be fully sent. port_busy is reset via callback
-		while(port_busy) {
+		// Wait for message to be fully sent.
+		while(MIDIERR_STILLPLAYING == midiOutUnprepareHeader(midi_handle, &mheader, sizeof(mheader))) {
 			Sleep(10);
 		}
 
-		midiOutUnprepareHeader(midi_handle, &mheader, sizeof(mheader));
 		free(tempbuf);
 		return 0;
 	}
@@ -148,13 +138,6 @@ static void list_midi_outputs(void) {
 	for(UINT i=0; i < n_outs; i++) {
 		midiOutGetDevCaps(i, &c, sizeof(MIDIOUTCAPS));
 		fprintf(stderr, "%d: %s\n", i, c.szPname);
-	}
-}
-
-void CALLBACK midi_out_cb( HMIDIOUT mh, UINT wMsg,
-		DWORD_PTR dwInst, DWORD_PTR dwp1, DWORD_PTR dwp2 ) {
-	if(wMsg == MOM_DONE) {
-		port_busy = false;
 	}
 }
 
