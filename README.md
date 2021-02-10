@@ -1,6 +1,6 @@
-# An mt32-pi control program for DOS and Amiga
+# An mt32-pi control program for DOS, Amiga, Atari ST, Linux, and Windows
 
-`MT32-PI.EXE`/`mt32-pi-ctl` is a control program for the [mt32-pi MIDI synthesizer](https://github.com/dwhinham/mt32-pi) available for DOS PCs and Amiga computers.
+`MT32-PI.EXE`/`MT32-PI.TTP`/`mt32-pi-ctl` is a control program for the [mt32-pi MIDI synthesizer](https://github.com/dwhinham/mt32-pi) available for DOS PCs, Atari ST and Amiga computers as well as modern systems running Linux and Windows.
 
 ## Features
 * Supports sending mt32-pi's custom System Exclusive messages for temporary configuration of SoundFonts & Co.
@@ -12,7 +12,7 @@
 * Useful for making game/application-specific start-up scripts to correctly set up the synth
 
 ## Usage Summary
-`MT32-PI.EXE` & `mt32-pi-ctl` accept the following UNIX-style parameters:
+`MT32-PI.EXE`/`MT32-PI.TTP`/`mt32-pi-ctl` accept the following UNIX-style parameters:
 
 ### DOS-specific options
 
@@ -31,6 +31,25 @@ OPTIONS:
   -l: The camd output location to connect to. (Default: out.0)
 ```
 
+### Atari-ST-specific options
+
+```
+USAGE: MT32-PI.TTP [OPTIONS]
+OPTIONS:
+  [No special options as the Atari ST has a built-in MIDI port which is automatically used]
+```
+This is a CLI/TTP-utility. If you launch it directly from TOS a graphical prompt will let
+you input the parameters. Though for more convenience I would recommend a text based shell
+like EmuCON or Okami.
+
+Note that quoting in Atari ST shells seems to work a bit different than in other systems (or
+maybe I don't get it but the following works, in any case).
+Quoted parameters must use single-quotes, be located in front, and the parameter needs to
+be within the quotes.
+
+Example: When on Amiga/Linux you'd write `mt32-pi-ctl -m -t "Hello, World!"`, on Atari ST
+it should be `MT32-PI.TTP '-t Hello, World!' -m`.
+
 ### Common options
 ```
   -h/--help: Print this info.
@@ -46,6 +65,8 @@ OPTIONS:
   -t/--mt32-txt "Some text": Send an MT-32 text display SysEx.
   -T/--sc55-txt "Some text": Send an SC-55 text display SysEx.
   -P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)
+  -X/--sc55-btxt "SomeText": Display a string on the screen as a Bitmap using the
+                             miniwi 4x8 font. Max. 8 characters (SC-55)
   -N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
   -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
 ```
@@ -58,7 +79,7 @@ You may specify multiple options, i.e. `MT32-PI.EXE -m -t "Hello, World!"` will 
 The `MAKEFILE` is written for the DOS-version of [Open Watcom C 1.9](https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/) as it can generate Real Mode executables. The Sourceforge release works perfectly in DosBox.
 Make sure you have the environment variables correctly set up. For that, DosBox users will need to run the `AUTOEXEC.BAT` code supplied by the installer.
 
-Then run `wmake` in `dos_src/` and compilation should run. Optionally, if you also have [upx](https://upx.github.io/) installed in your DOS environment, you can run `UPXCOMP.BAT` afterwards to pack the EXE and save a couple KB of executable size. `make dist` will also compress and then copy the resulting file to `dos_bin/`.
+Then run `wmake` in `dos_src/` and compilation should run. Optionally, if you also have [upx](https://upx.github.io/) installed in your DOS environment, you can run `UPXCOMP.BAT` afterwards to pack the EXE and save a couple KB of executable size. `wmake dist` will also compress and then copy the resulting file to `dos_bin/`.
 
 ### Amiga
 The `Makefile` is written for [bebbo's amiga-gcc](https://github.com/bebbo/amiga-gcc). After you have installed the toolchain, you also need to run `make sdk=camd` in your `amiga-gcc` source directory to install the `camd` library.
