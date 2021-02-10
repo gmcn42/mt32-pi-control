@@ -1,8 +1,9 @@
-#### mt32-pi-ctl ReadMe ####
+#### mt32-pi-ctl AmigaOS ReadMe ####
 
-mt32-pi-ctl is an AmigaOS control program for the mt32-pi MIDI synthesizer.
+mt32-pi-ctl is a control program for the mt32-pi MIDI synthesizer.
 
-Program source available at https://github.com/gmcn42/mt32-pi-control
+Program source, build instructions and ports to different modern and
+retro platforms available at https://github.com/gmcn42/mt32-pi-control
 
 The mt32-pi synthesizer lives at https://github.com/dwhinham/mt32-pi
 
@@ -35,6 +36,7 @@ OPTIONS:
   -P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)
   -N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
   -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
+  -Y/--syx file.syx : Send the contents of a SYX-file.
 
 You may specify multiple options, i.e. mt32-pi-ctl -m -t "Hello, World!" will
 first send the MT-32 mode command and then the screen text.
