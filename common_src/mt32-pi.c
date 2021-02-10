@@ -621,6 +621,7 @@ static void print_usage(void) {
 			"\'-X/--sc55-btxt SomeText\': Display a string on the screen as a Bitmap. (SC-55)\n"
 			"-N/--negative: Reverse color. Use with \'-P/--sc55-bmp\' or \'-X/--sc55-btxt\'.\n"
 			"\'-M C0 01 C0 DE\': Send a list of custom MIDI bytes.\n"
+			"-Y/--syx file.syx : Send the contents of a SYX-file.\n"
 			"NOTE: If you use quotes in arguments, put those before unquoted ones.\n" );
 	#else
 	printf("-m/--mt32: Switch mt32-pi to MT-32 mode.\n"
@@ -635,7 +636,8 @@ static void print_usage(void) {
 			"-P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)\n"
 			"-X/--sc55-btxt \"SomeText\": Display a string on the screen as a Bitmap. (SC-55)\n"
 			"-N/--negative: Reverse color. Use with \'-P/--sc55-bmp\' or \'-X/--sc55-btxt\'.\n"
-			"-M/--midi \"C0 01 C0 DE\": Send a list of custom MIDI bytes.\n" );
+			"-M/--midi \"C0 01 C0 DE\": Send a list of custom MIDI bytes.\n"
+			"-Y/--syx file.syx : Send the contents of a SYX-file.\n" );
 	#endif
 }
 
