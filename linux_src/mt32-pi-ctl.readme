@@ -28,6 +28,7 @@ OPTIONS:
   -t/--mt32-txt "Some text": Send an MT-32 text display SysEx.
   -T/--sc55-txt "Some text": Send an SC-55 text display SysEx.
   -P/--sc55-bmp FILE.BMP: Display a 16x16 1bpp BMP on the screen. (SC-55 SysEx)
+  -X/--sc55-btxt "SomeText": Display a string on the screen as a Bitmap. (SC-55) 
   -N/--negative: Reverse image color. Use with '-P/--sc55-bmp'.
   -M/--midi "C0 01 C0 DE": Send a list of custom MIDI bytes.
   -Y/--syx file.syx : Send the contents of a SYX-file.
@@ -40,6 +41,7 @@ first send the MT-32 mode command and then the screen text.
 
 Copyright (C) 2021 Andreas Zdziarstek
 with parts
+	Copyright (C) 2015-2016 Josuah Demangeon <jd at ssh dot bio> (miniwi font),
 	Copyright (C) 2002 Todd C. Miller <Todd.Miller@courtesan.com> (getopt).
 	and Copyright (C) 2000 The NetBSD Foundation, Inc. (getopt)
 
