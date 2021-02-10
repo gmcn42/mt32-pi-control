@@ -14,7 +14,8 @@
 ## Usage Summary
 `MT32-PI.EXE`/`MT32-PI.TTP`/`mt32-pi-ctl` accept the following UNIX-style parameters:
 
-### DOS-specific options
+### Platform-specific options
+#### DOS-specific options
 
 ```
 USAGE: MT32-PI.EXE [OPTIONS]
@@ -22,7 +23,7 @@ OPTIONS:
   -p [ADDR]: Set the port address of the MPU401 interface. Default: 330.
 ```
 
-### AmigaOS-specific options
+#### AmigaOS-specific options
 
 ```
 USAGE: mt32-pi-ctl [OPTIONS]
@@ -31,7 +32,7 @@ OPTIONS:
   -l: The camd output location to connect to. (Default: out.0)
 ```
 
-### Atari-ST-specific options
+#### Atari-ST-specific options
 
 ```
 USAGE: MT32-PI.TTP [OPTIONS]
@@ -50,7 +51,7 @@ be within the quotes.
 Example: When on other systems you'd write `mt32-pi-ctl -m -t "Hello, World!"`, on Atari ST
 it should be `MT32-PI.TTP '-t Hello, World!' -m`.
 
-### Linux-specific options
+#### Linux-specific options
 
 ```
 USAGE: mt32-pi-ctl [OPTIONS]
@@ -59,7 +60,7 @@ OPTIONS:
 ```
 To find out which client/port to use, you can run `aconnect -l` to list available devices.
 
-### Windows-specific options
+#### Windows-specific options
 
 ```
 USAGE: mt32-pi-ctl.exe [OPTIONS]
