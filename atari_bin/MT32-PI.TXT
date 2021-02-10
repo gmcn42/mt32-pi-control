@@ -38,7 +38,7 @@ OPTIONS:
   -Y/--syx file.syx : Send the contents of a SYX-file.
  NOTE: If you use quotes in arguments, put those before unquoted ones.
 
-You may specify multiple options, i.e. MT32-PI.EXE '-t Hello, World!' -m will
+You may specify multiple options, i.e. MT32-PI.TTP '-t Hello, World!' -m will
 first send the MT-32 mode command and then the screen text.
 
 
