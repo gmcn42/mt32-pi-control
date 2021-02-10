@@ -1,3 +1,13 @@
+/*
+ * mt32-pi-control
+ *
+ * An mt32-pi control program for DOS PCs, Atari ST,
+ * and Amiga computers
+ *
+ * Copyright (C) 2021 Andreas Zdziarstek 
+ *
+ */
+
 #include <time.h>
 #include <errno.h>
 
