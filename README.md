@@ -2,6 +2,24 @@
 
 `MT32-PI.EXE`/`MT32-PI.TTP`/`mt32-pi-ctl` is a control program for the [mt32-pi MIDI synthesizer](https://github.com/dwhinham/mt32-pi) available for DOS PCs, Atari ST and Amiga computers as well as modern systems running Linux and Windows.
 
+
+- [Features](#features)
+- [Usage Summary](#usage-summary)
+  * [Platform-specific options](#platform-specific-options)
+    + [DOS-specific options](#dos-specific-options)
+    + [AmigaOS-specific options](#amigaos-specific-options)
+    + [Atari-ST-specific options](#atari-st-specific-options)
+    + [Linux-specific options](#linux-specific-options)
+    + [Windows-specific options](#windows-specific-options)
+  * [Common options](#common-options)
+- [Building](#building)
+  * [DOS](#dos)
+  * [Amiga](#amiga)
+  * [Atari ST](#atari-st)
+  * [Linux](#linux)
+  * [Windows](#windows)
+- [Showcase](#showcase)
+
 ## Features
 * Supports sending mt32-pi's custom System Exclusive messages for temporary configuration of SoundFonts & Co.
 * Can send standard MT-32, GM, and GS reset sequences
@@ -117,7 +135,7 @@ You need to have `gcc`, `make`, and the ALSA/libasound development headers insta
 The `Makefile` is meant to be used on a Linux host with the `i686-w64-mingw32` toolchain. On Debian/Ubuntu `sudo apt install mingw-w64*` does the job. Afterwards, run `make` and `make dist` in the `win32_src` folder. If you want to compile on Windows, MSYS should work but you might need to adjust the executable names in the Makefile.
 
 
-## Showcase :)
+## Showcase
 <img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_1.jpg" width="480">
 
 <img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_2.jpg" width="480">
