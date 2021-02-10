@@ -6,7 +6,9 @@
 * Supports sending mt32-pi's custom System Exclusive messages for temporary configuration of SoundFonts & Co.
 * Can send standard MT-32, GM, and GS reset sequences
 * Can send screen text in MT-32 mode and 16x16 1bpp bitmaps in SoundFont mode to the mt32-pi's display
+* If that's not gimmicky enough for you, it can also send 8 characters of text as a 16x16 bitmap using the Miniwi 4x8 font
 * Custom MIDI messages from the command line
+* Can send SYX-files of any length containing any number of SysEx messages
 * DOS version compiled for 8086 Real Mode, so should work on pretty much any system with an MPU401-compatible interface
 * Amiga version is compiled for AmigaOS ≥1.3 and supports both `camd.library` and direct serial port access, so it likewise should work on pretty much any system
 * Useful for making game/application-specific start-up scripts to correctly set up the synth
@@ -104,6 +106,16 @@ Then run `wmake` in `dos_src/` and compilation should run. Optionally, if you al
 The `Makefile` is written for [bebbo's amiga-gcc](https://github.com/bebbo/amiga-gcc). After you have installed the toolchain, you also need to run `make sdk=camd` in your `amiga-gcc` source directory to install the `camd` library.
 
 After that, you can run `make` and `make dist` in the `amiga-src/` folder. If you have installed amiga-gcc somewhere else than `/opt/amiga`, you will need to adjust the `PREFIX` variable in the `Makefile` accordingly.
+
+### Atari ST
+The `Makefile` is written for [Vincent Rivière's m68k-atari-mint cross-tools](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) on Linux or (probably) WSL. For Debian/Ubuntu I recommend using the repositories on the site. After installation of the toolchain, run `make` and `make dist` in the `atari_src` folder.
+
+### Linux
+You need to have `gcc`, `make`, and the ALSA/libasound development headers installed. On Debian/Ubuntu `sudo apt install build-essential libasound2-dev` does the job. Afterwards, run `make` and `make dist` in the `linux_src` folder.
+
+### Windows
+The `Makefile` is meant to be used on a Linux host with the `i686-w64-mingw32` toolchain. On Debian/Ubuntu `sudo apt install mingw-w64*` does the job. Afterwards, run `make` and `make dist` in the `win32_src` folder. If you want to compile on Windows, MSYS should work but you might need to adjust the executable names in the Makefile.
+
 
 ## Showcase :)
 <img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_1.jpg" width="480">
