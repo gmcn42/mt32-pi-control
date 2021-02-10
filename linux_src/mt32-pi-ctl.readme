@@ -1,6 +1,6 @@
 #### mt32-pi-ctl Linux ReadMe ####
 
-mt32-pi-ctl is an control program for the mt32-pi MIDI synthesizer.
+mt32-pi-ctl is a control program for the mt32-pi MIDI synthesizer.
 
 Program source, build instructions and ports to different modern and
 retro platforms available at https://github.com/gmcn42/mt32-pi-control
