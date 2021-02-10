@@ -35,6 +35,6 @@ clean :
 
 .PHONY: dist
 dist: $(PROGRAM_NAME) 
-	cp -v $(PROGRAM_NAME) ../amiga_bin/
-	cp -v *.bmp ../amiga_bin/
+	cp -v $(PROGRAM_NAME) ../linux_bin/
+	cp -v *.bmp ../linux_bin/
 

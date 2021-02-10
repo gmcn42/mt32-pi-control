@@ -17,7 +17,7 @@ MODE = s
 all: mt32-pi.exe
 
 mt32-pi.exe: ..\COMMON~1\mt32-pi.c mpu401.c midi_dev.c ..\COMMON~1\getopt.c
-	*wcl -i=..\COMMON~1\ -zp2 -lr -we -d0 -y -0 -s -m$(MODE) -wx -dUSE_CUSTOM_FILE_IO -dUSE_CUSTOM_DELAY -dREPLACE_GETOPT -fe=mt32-pi.exe -fm=mt32-pi.map *.c ..\COMMON~1\*.c 
+	*wcl -i=..\COMMON~1\ -zp2 -lr -we -d0 -y -0 -s -m$(MODE) -wx -dUSE_CUSTOM_DELAY -dREPLACE_GETOPT -fe=mt32-pi.exe -fm=mt32-pi.map *.c ..\COMMON~1\*.c 
 
 dist: mt32-pi.exe .symbolic
 	UPXCOMP.BAT

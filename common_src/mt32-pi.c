@@ -34,7 +34,6 @@
 #include "midi_dev.h"
 #include "getopt.h"
 #include "delay.h"
-#include "file_io.h"
 #include "miniwift.h"
 
 #ifndef PROGRAM_NAME
@@ -364,15 +363,13 @@ int main(int argc, char *argv[]) {
 	// -Y/--syx FILE.SYX
 	if(syx_fname[0] != '\0') {
 		unsigned char fbuf[512];
-		struct file_t fh;
-		int ret;
-
+		FILE *fh;
 		if(verbose)
 			fprintf(stderr, "Sending %s.\n", syx_fname);
-		
-		
-		ret = fio_open(&fh, syx_fname, FIO_OPEN_RD);
-		if(ret!=0) {
+
+
+		fh = fopen(syx_fname, "rb");
+		if(fh == NULL) {
 			fprintf(stderr, "ERROR: Can't open %s.\n", syx_fname);
 			mididev_deinit();
 			return EXIT_FAILURE;
@@ -382,8 +379,8 @@ int main(int argc, char *argv[]) {
 		while(1) {
 			int i, found_start, found_end, start_index, end_index;
 			int n;
-			long int read_start = fh.curpos;
-			n = fio_read(&fh, fbuf, 512);
+			long int read_start = ftell(fh);
+			n = fread(fbuf, 1, 512, fh);
 			
 			found_start = 0;
 			found_end = 0;
@@ -421,11 +418,11 @@ int main(int argc, char *argv[]) {
 			mididev_send_bytes(fbuf+start_index, end_index - start_index+1);
 			// Wait grace period
 			delay_ms(100);
-			if(read_start + end_index+1 == fh.curpos)
+			if(read_start + end_index+1 == ftell(fh))
 				break;
-			fio_seek(&fh, FIO_SEEK_START, read_start + end_index+1);
+			fseek(fh, read_start + end_index+1, SEEK_SET);
 		}
-		fio_close(&fh);
+		fclose(fh);
 	}
 	
 	mididev_deinit();
@@ -475,38 +472,54 @@ static void bmp_to_sysex_disp_sc55(unsigned char *sysexbuf, const char *fname, i
 	const unsigned char prefix[7] = { 0xF0, 0x41, 0x10, 0x45, 0x12, 0x10, 0x01 };
 	int i;
 	unsigned char fbuf[64];
-	struct file_t fh;
-	int ret;
+	FILE *fh;
+	int flen;
 	unsigned char pix_offset;
 	memset(sysexbuf, '\0', 74);
 	/* Copy SysEx start and display cmd into msg */ 
 	memcpy(sysexbuf, prefix, 7);
-	ret = fio_open(&fh, fname, FIO_OPEN_RD);
-	if(ret!=0) {
+	fh = fopen(fname, "rb");
+	if(fh == NULL) {
 		fprintf(stderr, "ERROR: Can't open %s.\n", fname);
 		abort();
 	}
 	// check if this is a BMP
-	fio_read(&fh, fbuf, 2);
+	if(!fread(fbuf, 1, 2, fh)) {
+		fprintf(stderr, "Error reading %s.\n", sc55_bmp_fname);
+		fclose(fh);
+		abort();
+	}
 	if(!(fbuf[0]=='B' && fbuf[1]=='M')) {
 		fprintf(stderr, "ERROR: %s is not a valid BMP file.\n", sc55_bmp_fname);
-		fio_close(&fh);
+		fclose(fh);
 		abort();
 	}
 	
 	// check offset of pixel array
-	fio_seek(&fh, FIO_SEEK_START, 0xA);
-	fio_read(&fh, &pix_offset, 1);
-	
-	if(fh.flen - pix_offset < 64) {
+	fseek(fh, 0xA, SEEK_SET);
+	if(!fread(&pix_offset, 1, 1, fh)) {
+		fprintf(stderr, "Error reading %s.\n", sc55_bmp_fname);
+		fclose(fh);
+		abort();
+	}
+
+
+	fseek(fh, 0, SEEK_END);
+	flen = ftell(fh);
+	if(flen - pix_offset < 64) {
 		fprintf(stderr, "ERROR: %s seems to be too small in size.\n", sc55_bmp_fname);
-		fio_close(&fh);
+		fclose(fh);
 		abort();
 	}
 	// read pixel array
-	fio_seek(&fh, FIO_SEEK_START, pix_offset);
-	fio_read(&fh, fbuf, 64);
-	fio_close(&fh);
+	fseek(fh, pix_offset, SEEK_SET);
+	if(!fread(fbuf, 1, 64, fh)) {
+		fprintf(stderr, "Error reading %s.\n", sc55_bmp_fname);
+		fclose(fh);
+		abort();
+	}
+
+	fclose(fh);
 	
 	// Perform bit-manipulation magic to
 	// build the SysEx
