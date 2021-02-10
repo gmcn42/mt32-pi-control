@@ -47,8 +47,26 @@ maybe I don't get it but the following works, in any case).
 Quoted parameters must use single-quotes, be located in front, and the parameter needs to
 be within the quotes.
 
-Example: When on Amiga/Linux you'd write `mt32-pi-ctl -m -t "Hello, World!"`, on Atari ST
+Example: When on other systems you'd write `mt32-pi-ctl -m -t "Hello, World!"`, on Atari ST
 it should be `MT32-PI.TTP '-t Hello, World!' -m`.
+
+### Linux-specific options
+
+```
+USAGE: mt32-pi-ctl [OPTIONS]
+OPTIONS:
+  -p "[CLIENT]:[PORT]" : The ALSA MIDI client and port address to output to (*MANDATORY*).
+```
+To find out which client/port to use, you can run `aconnect -l` to list available devices.
+
+### Windows-specific options
+
+```
+USAGE: mt32-pi-ctl.exe [OPTIONS]
+OPTIONS:
+  -p PORT : Set MIDI output port number (*MANDATORY*).
+  -l : List available MIDI output ports and exit.
+```
 
 ### Common options
 ```
