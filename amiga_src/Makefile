@@ -9,7 +9,7 @@ AS =  $(PREFIX)/m68k-amigaos-as
 
 VPATH = .:../common_src
 INCLUDE = -I../common_src
-DEFINE = -DPROGRAM_NAME='"$(PROGRAM_NAME)"' -DREPLACE_GETOPT
+DEFINE = -DPROGRAM_NAME='"$(PROGRAM_NAME)"' -DREPLACE_GETOPT -DUSE_CUSTOM_DELAY
 
 #CFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-code -fbaserel -mregparm -Wall -Werror -Wno-pointer-sign -std=gnu99 
 
@@ -19,7 +19,7 @@ CXXFLAGS = $(INCLUDE) -Os -s -m68000 -fomit-frame-pointer -mcrt=nix13 -msmall-co
 
 LIBS = -lamiga
 
-OBJ = mt32-pi.o midi_dev.o getopt.o version.o
+OBJ = mt32-pi.o midi_dev.o getopt.o delay.o version.o
 
 %.o : %.c
 	$(CC) -c -o $@ $< $(CFLAGS)

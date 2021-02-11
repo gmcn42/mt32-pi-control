@@ -48,7 +48,7 @@ static char *dev_optstr = "Sl:";
 static bool use_direct_serial = false;
 static char camd_out[32] = "out.0";
 
-int mididev_init(void) {
+int mididev_init(void) {	
 	if(use_direct_serial) {
 		if (!(msg_port = CreatePort(NULL, 0L))) {
 			fprintf(stderr, "Failed to create port.\n");
@@ -127,6 +127,8 @@ int mididev_deinit(void) {
 		DeleteMidi(midi_node);
 		midi_node = NULL;
 	}
+
+	CloseLibrary(CamdBase);
 	return 0;
 }
 
