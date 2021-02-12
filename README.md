@@ -129,7 +129,7 @@ After that, you can run `make` and `make dist` in the `amiga-src/` folder. If yo
 The `Makefile` is written for [Vincent Rivière's m68k-atari-mint cross-tools](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) on Linux or (probably) WSL. For Debian/Ubuntu I recommend using the repositories on the site. After installation of the toolchain, run `make` and `make dist` in the `atari_src` folder.
 
 ### Linux
-You need to have `gcc`, `make`, and the ALSA/libasound development headers installed. On Debian/Ubuntu `sudo apt install build-essential libasound2-dev` does the job. Afterwards, run `make` and `make dist` in the `linux_src` folder.
+You need to have `gcc`, `make`, and the ALSA/libasound development headers installed. On Debian/Ubuntu `sudo apt install build-essential libasound2-dev` does the job. Afterwards, run `make` in the `linux_src` folder.
 
 ### Windows
 The `Makefile` is meant to be used on a Linux host with the `i686-w64-mingw32` toolchain. On Debian/Ubuntu `sudo apt install mingw-w64*` does the job. Afterwards, run `make` and `make dist` in the `win32_src` folder. If you want to compile on Windows, MSYS should work but you might need to adjust the executable names in the Makefile.
