@@ -5,6 +5,7 @@
 #include "midi_dev.h"
 #include "getopt.h"
 #include "mpu401.h"
+#include "delay.h"
 
 static int mpubase = 0x330;
 
@@ -16,6 +17,12 @@ int mididev_init(void) {
 		return -1;
 	}
 	mpu401_uart(mpubase);
+	
+	/* 
+	 * Wait for 100ms, some intelligent MPU-401s seem to need this.
+	 * (should fix github.com/gmcn42/mt32-pi-control/issues/2)
+	 */
+	delay_ms(100); 
 	return 0;
 }
 
