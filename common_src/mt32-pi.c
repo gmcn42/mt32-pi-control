@@ -90,7 +90,8 @@ int main(int argc, char *argv[]) {
 		gm_rst_flag = 0,
 		pic_negative_flag = 0,
 		verbose = 0,
-		soundfont = -1;
+		soundfont = -1,
+		mt32_rstereo = -1;
 	static mt32pi_mode_t mode = MODE_UNCHANGED;
 	static mt32pi_romset_t romset = ROM_UNCHANGED;
 	#ifdef ARGV_NO_BASENAME
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
 			{"reboot", no_argument, &reboot_flag, 1},
 			{"help", no_argument, 0, 'h'},
 			{"mt32", no_argument, 0, 'm'},
+			{"mt32-rstereo", required_argument, 0, 'S'},
 			{"fluidsynth", no_argument, 0, 'g'},
 			{"soundfont", required_argument, 0, 's'},
 			{"mt32-reset", no_argument, &mt32_rst_flag, 1},
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]) {
 			{"syx", required_argument, 0, 'Y'},
 			{0, 0, 0, 0}
 		};
-	char optstr[32] = "hs:t:T:b:mgrvM:P:NY:X:";
+	char optstr[32] = "hs:S:t:T:b:mgrvM:P:NY:X:";
 	
 	// The MIDI backend may add some more short options
 	// Be sure that strlen(optstr) remains <32
@@ -151,6 +153,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 's':
 				soundfont = (int)strtol(optarg, NULL, 10);
+				break;
+			case 'S':
+				mt32_rstereo = (int)strtol(optarg, NULL, 10);
 				break;
 			case 't':
 				strncpy(mt32_text, optarg, 20);
@@ -296,6 +301,15 @@ int main(int argc, char *argv[]) {
 		mididev_send_bytes(cmd_sysex, 5);
 	}
 	
+	// -S/--mt32-rstereo
+	if(mt32_rstereo > -1) {
+		if(verbose)
+			fprintf(stderr, "%sabling MT-32 reversed stereo mode.\n", mt32_rstereo ? "En" : "Dis");
+		cmd_sysex[2] = 0x04;
+		cmd_sysex[3] = mt32_rstereo;
+		mididev_send_bytes(cmd_sysex, 5);
+	}
+
 	// --mt32-reset
 	if(mt32_rst_flag) {
 		if(verbose)
@@ -612,6 +626,7 @@ static void print_usage(void) {
 			"-g/--fluidsynth: Switch mt32-pi to FluidSynth mode.\n"
 			"-b/--romset [old, new, cm32l]: Switch MT-32 romset.\n"
 			"-s/--soundfont [NUMBER]: Set FluidSynth SoundFont.\n" 
+			"-S/--mt32-rstereo [0, 1]: Enable/disable MT-32 reversed stereo.\n"
 			"--mt32-reset: Send an MT-32 reset SysEx message.\n"
 			"--gm-reset: Send a GM reset SysEx message.\n"
 			"--gs-reset: Send a GS reset SysEx message.\n"
@@ -628,6 +643,7 @@ static void print_usage(void) {
 			"-g/--fluidsynth: Switch mt32-pi to FluidSynth mode.\n"
 			"-b/--romset [old, new, cm32l]: Switch MT-32 romset.\n"
 			"-s/--soundfont [NUMBER]: Set FluidSynth SoundFont.\n" 
+			"-S/--mt32-rstereo [0, 1]: Enable/disable MT-32 reversed stereo.\n"
 			"--mt32-reset: Send an MT-32 reset SysEx message.\n"
 			"--gm-reset: Send a GM reset SysEx message.\n"
 			"--gs-reset: Send a GS reset SysEx message.\n"
