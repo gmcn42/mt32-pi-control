@@ -80,7 +80,7 @@ OPTIONS:
 ```
 To find out which client/port to use, you can run `aplaymidi -l` or `aconnect -l` to list available devices.
 
-Since 1.0.1, the Linux version of `mt32-pi-ctl` also comes with an intelligent bash completion script
+Since 1.0.1, the Linux version of `mt32-pi-ctl` also comes with intelligent bash and fish completion scripts
 that will smartly autocomplete (long) options, romsets, filenames and, if `aplaymidi` is in your
 PATH, even available MIDI ports.
 
@@ -98,20 +98,24 @@ $ mt32-pi-ctl -p 28:0 --romset <TAB><TAB>
 cm32l  new  old
 ```
 For this to work mt32-pi-ctl must be in your PATH, e.g. in `/usr/local/bin` and the
-bash completion script must be in a special completion script directory or sourced
+bash/fish completion scripts must be in a special completion script directory or for bash, sourced
 by `.bashrc`.
 
-On modern Debian/Ubuntu systems, install the script using
+On modern Debian/Ubuntu systems, install the scripts using
 ```
 sudo cp linux_src/bash_completion/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
+sudo cp linux_src/fish_completion/mt32-pi-ctl.fish /usr/share/fish/vendor_completions.d/mt32-pi-ctl.fish
 ```
-On other or older distros it may need to go to `/etc/bash_completion.d/mt32-pi-ctl` instead.
+On other or older distros, the bash completion script may need to go to `/etc/bash_completion.d/mt32-pi-ctl` instead.
 
 Alternatively you can add the line
 ```
 source /path/to/mt32-pi-ctl.bash
 ```
 to your `.bashrc`. After installing, you may need to relogin or reboot.
+
+The fish completion script may be located in your home directory under `~/.config/fish/completions` instead, if you prefer.
+Once copied, completions should be available in fish immediately.
 
 #### Windows-specific options
 
