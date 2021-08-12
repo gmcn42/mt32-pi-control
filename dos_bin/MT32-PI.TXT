@@ -1,4 +1,4 @@
-#### MT32-PI.EXE ReadMe ####
+#### MT32-PI.EXE 1.0.1 DOS ReadMe ####
 
 MT32-PI.EXE is a control program for the mt32-pi MIDI synthesizer.
 
@@ -22,6 +22,7 @@ OPTIONS:
   -g/--fluidsynth: Switch mt32-pi to FluidSynth mode.
   -b/--romset [old, new, cm32l]: Switch MT-32 romset.
   -s/--soundfont [NUMBER]: Set FluidSynth SoundFont.
+  -S/--mt32-rstereo [0, 1]: Enable/disable MT-32 reversed stereo.
   --mt32-reset: Send an MT-32 reset SysEx message.
   --gm-reset: Send a GM reset SysEx message.
   --gs-reset: Send a GS reset SysEx message.
