@@ -103,7 +103,7 @@ by `.bashrc`.
 
 On modern Debian/Ubuntu systems, install the script using
 ```
-sudo cp bash_completion/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
+sudo cp linux_src/bash_completion/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
 ```
 On other or older distros it may need to go to `/etc/bash_completion.d/mt32-pi-ctl` instead.
 
