@@ -78,7 +78,40 @@ USAGE: mt32-pi-ctl [OPTIONS]
 OPTIONS:
   -p "[CLIENT]:[PORT]" : The ALSA MIDI client and port address to output to (*MANDATORY*).
 ```
-To find out which client/port to use, you can run `aconnect -l` to list available devices.
+To find out which client/port to use, you can run `aplaymidi -l` or `aconnect -l` to list available devices.
+
+Since 1.0.1, the Linux version of `mt32-pi-ctl` also comes with an intelligent bash completion script
+that will smartly autocomplete (long) options, romsets, filenames and, if `aplaymidi` is in your
+PATH, even available MIDI ports.
+
+Examples:
+```
+$ mt32-pi-ctl -p <TAB><TAB>
+14:0  28:0
+```
+```
+$ mt32-pi-ctl -p 28:0 --mt<TAB><TAB>
+--mt32  --mt32-reset --mt32-rstereo --mt32-txt
+```
+```
+$ mt32-pi-ctl -p 28:0 --romset <TAB><TAB>
+cm32l  new  old
+```
+For this to work mt32-pi-ctl must be in your PATH, e.g. in `/usr/local/bin` and the
+bash completion script must be in a special completion script directory or sourced
+by `.bashrc`.
+
+On modern Debian/Ubuntu systems, install the script using
+```
+sudo cp bash_completion/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
+```
+On other or older distros it may need to go to `/etc/bash_completion.d/mt32-pi-ctl` instead.
+
+Alternatively you can add the line
+```
+source /path/to/mt32-pi-ctl.bash
+```
+to your `.bashrc`. After installing, you may need to relogin or reboot.
 
 #### Windows-specific options
 
@@ -98,6 +131,7 @@ OPTIONS:
   -g/--fluidsynth: Switch mt32-pi to FluidSynth mode.
   -b/--romset [old, new, cm32l]: Switch MT-32 romset.
   -s/--soundfont [NUMBER]: Set FluidSynth SoundFont.
+  -S/--mt32-rstereo [0, 1]: Enable/disable MT-32 reversed stereo.
   --mt32-reset: Send an MT-32 reset SysEx message.
   --gm-reset: Send a GM reset SysEx message.
   --gs-reset: Send a GS reset SysEx message.
