@@ -1,4 +1,4 @@
-#### mt32-pi-ctl 1.0.1 Linux ReadMe ####
+#### mt32-pi-ctl 1.0.1a Linux ReadMe ####
 
 mt32-pi-ctl is a control program for the mt32-pi MIDI synthesizer.
 
@@ -37,13 +37,13 @@ OPTIONS:
 You may specify multiple options, i.e. mt32-pi-ctl -m -t "Hello, World!" will
 first send the MT-32 mode command and then the screen text.
 
-### bash completion ####
+### smart option completion ####
 
-Since version 1.0.1, the Linux version of mt32-pi-ctl also comes with an intelligent
-bash completion script that will smartly autocomplete (long) options, romsets, filenames
+Since version 1.0.1a, the Linux version of mt32-pi-ctl also comes with command completion
+scripts for bash, fish, and zsh that will smartly autocomplete (long) options, romsets, filenames
 and, if aplaymidi is in your PATH, even available MIDI ports.
 
-Examples:
+Examples for bash:
 
   $ mt32-pi-ctl -p <TAB><TAB>
     14:0  28:0
@@ -54,20 +54,46 @@ Examples:
   $ mt32-pi-ctl -p 28:0 --romset <TAB><TAB>
     cm32l  new  old
 
-For this to work mt32-pi-ctl must be in your PATH, e.g. in /usr/local/bin and the bash
-completion script must be in a special completion script directory or sourced by .bashrc.
+For this to work mt32-pi-ctl must be in your PATH, e.g. in /usr/local/bin and you need to copy the
+completion scripts in linux_src/completion_scripts/ to some special folders so your shell can find
+them automatically. The folders may be distro-specific but the ones below should work for
+Debian/Ubuntu at the very least. If in doubt, consult your distro's documentation.
+
+Note that you need aplaymidi installed if you want autocompletion to show you available MIDI output
+ports for the -p option. On most distros---including Debian, Ubuntu, and Arch---the package you need
+is called alsa-utils.
+
+## bash completion script ##
 
 On modern Debian/Ubuntu systems, install the script using
+  sudo cp linux_src/completion_scripts/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
 
-  # cp bash_completion/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
-
-On other or older distros it may need to go to /etc/bash_completion.d/mt32-pi-ctl instead.
+On other or older distros, the bash completion script may need to go to /etc/bash_completion.d/mt32-pi-ctl
+instead.
 
 Alternatively you can add the line
-
   source /path/to/mt32-pi-ctl.bash
+to your .bashrc.
 
-to your .bashrc. After installing, you may need to relogin or reboot
+After installing, you may need to relogin or reboot.
+
+## fish completion script ###
+
+Install the script using
+  sudo cp linux_src/completion_scrips/mt32-pi-ctl.fish /usr/share/fish/vendor_completions.d/mt32-pi-ctl.fish
+  
+The fish completion script may be located in your home directory under ~/.config/fish/completions
+instead, if you prefer.
+Once copied, completions should be available in fish immediately.
+
+## zsh completion script ##
+
+Install the script using
+  sudo cp linux_src/completion_scrips/mt32-pi-ctl.zsh /usr/local/share/zsh/site-functions/_mt32-pi-ctl
+
+Alternatively you may use any of the directories reported by echo $fpath but note that the script has to
+be renamed to _mt32-pi-ctl or zsh won't associate it with the program.
+After installing, you may need to relogin or reboot.
 
 #### BSD-License ####
 
