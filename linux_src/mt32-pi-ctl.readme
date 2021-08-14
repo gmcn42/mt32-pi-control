@@ -80,7 +80,7 @@ After installing, you may need to relogin or reboot.
 ## fish completion script ###
 
 Install the script using
-  sudo cp linux_src/completion_scrips/mt32-pi-ctl.fish /usr/share/fish/vendor_completions.d/mt32-pi-ctl.fish
+  sudo cp linux_src/completion_scripts/mt32-pi-ctl.fish /usr/share/fish/vendor_completions.d/mt32-pi-ctl.fish
   
 The fish completion script may be located in your home directory under ~/.config/fish/completions
 instead, if you prefer.
@@ -89,7 +89,7 @@ Once copied, completions should be available in fish immediately.
 ## zsh completion script ##
 
 Install the script using
-  sudo cp linux_src/completion_scrips/mt32-pi-ctl.zsh /usr/local/share/zsh/site-functions/_mt32-pi-ctl
+  sudo cp linux_src/completion_scripts/mt32-pi-ctl.zsh /usr/local/share/zsh/site-functions/_mt32-pi-ctl
 
 Alternatively you may use any of the directories reported by echo $fpath but note that the script has to
 be renamed to _mt32-pi-ctl or zsh won't associate it with the program.
