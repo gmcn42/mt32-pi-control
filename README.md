@@ -18,6 +18,11 @@
   * [Atari ST](#atari-st)
   * [Linux](#linux)
   * [Windows](#windows)
+- [Installation](#installation)
+  * [Linux shell completion scripts](#linux-shell-completion-scripts)
+    + [bash completion script](#bash-completion-script)
+    + [fish completion script](#fish-completion-script)
+    + [zsh completion script](#zsh-completion-script)
 - [Showcase](#showcase)
 
 ## Features
@@ -30,6 +35,7 @@
 * DOS version compiled for 8086 Real Mode, so should work on pretty much any system with an MPU401-compatible interface
 * Amiga version is compiled for AmigaOS ≥1.3 and supports both `camd.library` and direct serial port access, so it likewise should work on pretty much any system
 * Useful for making game/application-specific start-up scripts to correctly set up the synth
+* NEW: Smart option autocompletion on Linux using the bash, fish, and zsh shells
 
 ## Usage Summary
 `MT32-PI.EXE`/`MT32-PI.TTP`/`mt32-pi-ctl` accept the following UNIX-style parameters:
@@ -80,11 +86,11 @@ OPTIONS:
 ```
 To find out which client/port to use, you can run `aplaymidi -l` or `aconnect -l` to list available devices.
 
-Since 1.0.1, the Linux version of `mt32-pi-ctl` also comes with intelligent bash and fish completion scripts
+Since 1.0.1a, the Linux version of `mt32-pi-ctl` also comes with intelligent bash, fish, and zsh completion scripts
 that will smartly autocomplete (long) options, romsets, filenames and, if `aplaymidi` is in your
 PATH, even available MIDI ports.
 
-Examples:
+Examples for bash:
 ```
 $ mt32-pi-ctl -p <TAB><TAB>
 14:0  28:0
@@ -99,23 +105,9 @@ cm32l  new  old
 ```
 For this to work mt32-pi-ctl must be in your PATH, e.g. in `/usr/local/bin` and the
 bash/fish completion scripts must be in a special completion script directory or for bash, sourced
-by `.bashrc`.
+by `.bashrc`. [See below for installation instructions.](#linux-shell-completion-scripts)
 
-On modern Debian/Ubuntu systems, install the scripts using
-```
-sudo cp linux_src/bash_completion/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
-sudo cp linux_src/fish_completion/mt32-pi-ctl.fish /usr/share/fish/vendor_completions.d/mt32-pi-ctl.fish
-```
-On other or older distros, the bash completion script may need to go to `/etc/bash_completion.d/mt32-pi-ctl` instead.
 
-Alternatively you can add the line
-```
-source /path/to/mt32-pi-ctl.bash
-```
-to your `.bashrc`. After installing, you may need to relogin or reboot.
-
-The fish completion script may be located in your home directory under `~/.config/fish/completions` instead, if you prefer.
-Once copied, completions should be available in fish immediately.
 
 #### Windows-specific options
 
@@ -151,6 +143,7 @@ OPTIONS:
 You may specify multiple options, i.e. `MT32-PI.EXE -m -t "Hello, World!"` will first send the MT-32 mode command and then the screen text.
 
 ## Building
+Note that binaries are available on the [releases page](https://github.com/gmcn42/mt32-pi-control/releases) for all platforms apart from Linux. Building `mt32-pi-ctl` on most Linux distros is very starightforward though as you'll see below. For Arch Linux users, there's also a  [package on the AUR](https://aur.archlinux.org/packages/mt32-pi-control/) now.
 
 ### DOS
 The `MAKEFILE` is written for the DOS-version of [Open Watcom C 1.9](https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/) as it can generate Real Mode executables. The Sourceforge release works perfectly in DosBox.
@@ -172,6 +165,43 @@ You need to have `gcc`, `make`, and the ALSA/libasound development headers insta
 ### Windows
 The `Makefile` is meant to be used on a Linux host with the `i686-w64-mingw32` toolchain. On Debian/Ubuntu `sudo apt install mingw-w64*` does the job. Afterwards, run `make` and `make dist` in the `win32_src` folder. If you want to compile on Windows, MSYS should work but you might need to adjust the executable names in the Makefile.
 
+## Installation
+On most platforms installation just means copying the executable file somewhere in your `PATH`, e.g. `/usr/local/bin` on Linux, `C:` on Amiga, `C:\DOS\` on DOS, and similar. Alternatively you could add the path to `mt32-pi-ctl` to your `PATH` variable if that's more to your liking.
+
+### Linux shell completion scripts
+For Linux platforms, there's the additional feature of smart command-line completion for the `bash`, `zsh`, and `fish` shells. In order for this to work you need to copy the completion scripts in `linux_src/completion_scripts/` to some special folders so your shell can find them automatically. The folders may be distro-specific but the ones below should work for Debian/Ubuntu at the very least. If in doubt, consult your distro's documentation.
+
+Note that you need `aplaymidi` installed if you want autocompletion to show you available MIDI output ports for the `-p` option. On most distros—including Debian, Ubuntu, and Arch—the package you need is called `alsa-utils`.
+
+#### bash completion script
+On modern Debian/Ubuntu systems, install the script using
+```
+sudo cp linux_src/completion_scripts/mt32-pi-ctl.bash /usr/share/bash-completion/completions/mt32-pi-ctl
+```
+On other or older distros, the bash completion script may need to go to `/etc/bash_completion.d/mt32-pi-ctl` instead.
+
+Alternatively you can add the line
+```
+source /path/to/mt32-pi-ctl.bash
+```
+to your `.bashrc`. After installing, you may need to relogin or reboot.
+
+#### fish completion script
+Install the script using
+```
+sudo cp linux_src/completion_scrips/mt32-pi-ctl.fish /usr/share/fish/vendor_completions.d/mt32-pi-ctl.fish
+```
+The fish completion script may be located in your home directory under `~/.config/fish/completions` instead, if you prefer.
+Once copied, completions should be available in fish immediately.
+
+#### zsh completion script
+Install the script using
+```
+sudo cp linux_src/completion_scrips/mt32-pi-ctl.zsh /usr/local/share/zsh/site-functions/_mt32-pi-ctl
+```
+Alternatively you may use any of the directories reported by `echo $fpath` but note that the
+script has to be renamed to `_mt32-pi-ctl` or zsh won't associate it with the program.
+After installing, you may need to relogin or reboot.
 
 ## Showcase
 <img src="https://github.com/gmcn42/mt32-pi-control/raw/main/images/mt32pictl_1.jpg" width="480">
