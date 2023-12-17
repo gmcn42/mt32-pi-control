@@ -4,7 +4,7 @@
  * An mt32-pi control program for DOS PCs, Atari ST,
  * and Amiga computers
  *
- * Copyright (C) 2021 Andreas Zdziarstek 
+ * Copyright (C) 2021 Andreas Zdziarstek
  *
  */
 
@@ -28,20 +28,30 @@ typedef enum {
 
 static snd_seq_t *seq = NULL;
 static int src_port = -1, dst_port = -1, dst_client = -1;
+static char *alsa_client = NULL;
 
 static char *dev_optstr = "p:";
 
 int mididev_init(void) {
-	if(dst_port == -1 || dst_client == -1) {
-		fprintf(stderr, "ERROR: You must specify ALSA client and port using -p [CLIENT]:[PORT]\n");
-		return -1;
-	}
-	
 	if(snd_seq_open(&seq, "default", SND_SEQ_OPEN_OUTPUT, 0) < 0) {
 		fprintf(stderr, "ERROR: Could not open ALSA sequencer.\n");
 		return -1;
 	}
-	
+
+	if(alsa_client != NULL && *alsa_client != 0) {
+		snd_seq_addr_t addr;
+		if(snd_seq_parse_address(seq, &addr, alsa_client) >= 0) {
+			dst_client = addr.client;
+			dst_port = addr.port;
+		}
+	}
+
+	if(dst_port == -1 || dst_client == -1) {
+		fprintf(stderr, "ERROR: You must specify ALSA client and port using -p [CLIENT]:[PORT]\n");
+		snd_seq_close(seq);
+		return -1;
+	}
+
 	if( (src_port = snd_seq_create_simple_port(
 					seq,
 					"mt32-pi-ctl",
@@ -51,7 +61,7 @@ int mididev_init(void) {
 		snd_seq_close(seq);
 		return -1;
 	}
-	
+
 	if(snd_seq_connect_to(seq, src_port, dst_client, dst_port) < 0) {
 		fprintf(stderr, "ERROR: Could not connect to MIDI port %d:%d.\n", dst_client, dst_port);
 		mididev_deinit();
@@ -77,7 +87,7 @@ int mididev_send_bytes(const unsigned char *buf, int len) {
 	snd_seq_ev_set_dest(&ev, dst_client, dst_port);
 
 	midi_op_t o = (midi_op_t)(buf[0] & 0xF0);
-	
+
 	unsigned char *tempbuf = NULL;
 
 	switch(o) {
@@ -128,7 +138,7 @@ handle_error:
 			return -1;
 			break;
 	}
-	
+
 	snd_seq_event_output(seq, &ev);
 	snd_seq_drain_output(seq);
 
@@ -150,25 +160,17 @@ int mididev_parse_arg(int c, const char *optarg) {
 		fprintf(stderr, "ERROR: Unknown option \'%c\'.\n", c);
 		return -1;
 	}
+	if(alsa_client != NULL) {
+		free(alsa_client);
+		alsa_client = NULL;
+	}
 	size_t len = strlen(optarg);
-	char *temparg = (char*) malloc(len+1);
-	if(temparg == NULL) {
+	alsa_client = (char*) malloc(len+1);
+	if(alsa_client == NULL) {
 		fprintf(stderr, "Error allocating memory.\n");
 		return -1;
 	}
-	memcpy(temparg, optarg, len+1);
-
-	char *firstarg = strtok(temparg, ":");
-	if(firstarg == NULL) {
-		return -1;
-	}
-	char *secondarg = firstarg + strlen(firstarg) + 1;
-	if(secondarg - temparg >= len) {
-		return -1;
-	}
-	dst_client = (int) strtol(firstarg, NULL, 10);
-	dst_port = (int) strtol(secondarg, NULL, 10);
-	free(temparg);
+	memcpy(alsa_client, optarg, len+1);
 	return 0;
 }
 
